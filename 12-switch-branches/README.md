@@ -9,6 +9,8 @@
 | `git switch main` | 切回主分支 |
 | `git switch feature/login-page` | 切到指定分支 |
 | `git status` | 切換前先確認工作區是否乾淨 |
+| `git switch --detach 版本號` | 切回舊版本 |
+| `git switch -c 分支名稱 版本號` | 建新的分支以XX版本號出發 |
 
 ## 切換前先看狀態
 
