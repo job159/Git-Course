@@ -56,3 +56,4 @@ git switch main
 1. 切分支前先 `git status`，這是很值得養成的習慣。
 2. `git switch <branch>` 比舊式 `checkout` 更直覺。
 3. 乾淨的工作區，會讓分支切換輕鬆很多。
+123
