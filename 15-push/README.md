@@ -9,7 +9,7 @@
 | `git push -u origin main` | 第一次把 `main` 推上遠端並設定追蹤 |
 | `git push` | 之後的常規推送 |
 | `git push origin feature/login-page` | 把指定分支推上遠端 |
-| `git push --set-upstream origin 分支名稱` | 把切換分支推上github遠端 |
+| `git push --set-upstream origin 分支名稱` | 切換分支推上遠端 |
 
 ## 第一次推主分支
 
