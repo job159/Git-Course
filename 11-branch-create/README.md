@@ -7,7 +7,6 @@
 | 指令 | 用途 |
 | --- | --- |
 | `git branch` | 查看目前有哪些本地分支 |
-| `git branch --show-current` | 顯示目前所在分支 |
 | `git switch -c <branch>` | 建立新分支並立刻切過去 |
 
 ## 先看自己目前在哪裡
