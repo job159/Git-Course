@@ -18,6 +18,7 @@ dist/
 .env
 .vscode/
 *.log
+a.txt
 ```
 
 ## 如果檔案之前已經被追蹤
