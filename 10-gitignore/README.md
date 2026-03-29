@@ -19,6 +19,7 @@ dist/
 .vscode/
 *.log
 a.txt
+b.txt
 ```
 
 ## 如果檔案之前已經被追蹤
