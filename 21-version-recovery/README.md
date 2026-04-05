@@ -10,8 +10,8 @@
 | `git pull` | 抓遠端更新 |
 | `git restore` | 救回檔案內容，或把 staged 拿下來 |
 | `git reset` | 撤銷 add / commit / 把狀態往回拉 |
-
 | `git revert` | 安全撤銷已經 push 的 commit |
+=======
 
 ## 先判斷你現在是哪一層出問題
 
