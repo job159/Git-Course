@@ -257,6 +257,143 @@ section.block{padding:34px 0;scroll-margin-top:20px}
 .kick-detail code{background:var(--code-inline-bg);color:var(--code-inline-fg);padding:1.5px 6px;border-radius:5px;font-size:.9em;white-space:nowrap}
 .kick-detail u{text-decoration-color:var(--git-orange);text-underline-offset:2px}
 
+/* ============================================================
+   概念圖解：互動圖（commit 圖 / HEAD / reset 分層 …）
+============================================================ */
+.diagram{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px 16px 14px;margin:14px 0}
+.diagram-scenarios{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.scn-btn{
+  background:var(--bg-elev);border:1px solid var(--border);border-radius:999px;
+  padding:6px 13px;font-size:12.5px;font-weight:600;color:var(--text-soft);cursor:pointer;
+  transition:.15s;font-family:inherit;
+}
+.scn-btn:hover{border-color:var(--git-orange);color:var(--text)}
+.scn-btn.on{background:var(--git-orange);border-color:var(--git-orange);color:#fff}
+
+/* —— commit 圖 / HEAD —— */
+.ggraph{position:relative;padding:4px 0 2px;overflow-x:auto}
+.grow{display:flex;min-width:320px}
+.gcell{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 4px;position:relative}
+.ghead-row{align-items:flex-end;min-height:48px}
+.gbranch-row{align-items:flex-end;min-height:30px}
+.gbranch-row .gcell{flex-direction:column;gap:4px;justify-content:flex-end}
+.grail-row{height:42px}
+.grail-row::before{content:"";position:absolute;left:var(--rail-left,12.5%);right:var(--rail-right,12.5%);top:50%;height:3px;background:var(--border);transform:translateY(-50%);z-index:0}
+.gid-row{min-height:24px}
+.gid-row .gcell{font-family:"SF Mono",Consolas,monospace;font-size:12px;color:var(--text-soft)}
+.gid-row .gcell.ghost{opacity:.4;text-decoration:line-through}
+.gdot{width:22px;height:22px;border-radius:50%;background:var(--bg-elev);border:3px solid var(--text-faint);position:relative;z-index:2;transition:.2s}
+.gdot.cur{border-color:var(--git-orange);background:var(--git-orange-soft);box-shadow:0 0 0 4px var(--git-orange-soft)}
+.gdot.ghost{opacity:.32;border-style:dashed}
+.gpill{font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:6px;white-space:nowrap;font-family:"SF Mono",Consolas,monospace;line-height:1.5}
+.gpill.main{background:color-mix(in srgb,var(--green) 16%,var(--bg-elev));color:var(--green);border:1px solid color-mix(in srgb,var(--green) 40%,transparent)}
+.gpill.feature{background:color-mix(in srgb,var(--blue) 15%,var(--bg-elev));color:var(--blue);border:1px solid color-mix(in srgb,var(--blue) 40%,transparent)}
+.ghead-pill{display:inline-flex;flex-direction:column;align-items:center;gap:0}
+.ghead-pill b{font-size:11.5px;font-weight:800;padding:2px 10px;border-radius:6px;white-space:nowrap;background:var(--git-orange);color:#fff;font-family:"SF Mono",Consolas,monospace;letter-spacing:.04em}
+.ghead-pill .sub{font-size:10px;color:var(--text-faint);margin-top:1px}
+.ghead-pill .down{color:var(--git-orange);font-size:11px;line-height:.9;margin-top:1px}
+.ghead-pill.detached b{background:var(--red)}
+.ghead-pill.detached .down{color:var(--red)}
+
+/* —— reset 三層 —— */
+.rlayers{display:flex;flex-direction:column;gap:8px}
+.rlayer{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:var(--bg-elev);transition:.2s}
+.rlayer .ric{font-size:18px;flex-shrink:0}
+.rlayer .rname b{display:block;font-size:13.5px}
+.rlayer .rname small{color:var(--text-soft);font-size:11.5px}
+.rlayer .rstate{margin-left:auto;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.rlayer.keep{border-color:color-mix(in srgb,var(--green) 45%,transparent);background:color-mix(in srgb,var(--green) 8%,var(--bg-elev))}
+.rlayer.keep .rstate{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
+.rlayer.wipe{border-color:color-mix(in srgb,var(--red) 45%,transparent);background:color-mix(in srgb,var(--red) 8%,var(--bg-elev))}
+.rlayer.wipe .rstate{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
+.rlayer.move{border-color:color-mix(in srgb,var(--git-orange) 45%,transparent);background:var(--git-orange-soft)}
+.rlayer.move .rstate{background:color-mix(in srgb,var(--git-orange) 22%,transparent);color:var(--git-orange)}
+
+.diagram-note{margin-top:12px;background:var(--bg-elev);border:1px dashed var(--border);border-radius:9px;padding:11px 14px;font-size:13.5px;line-height:1.7;min-height:48px}
+.diagram-note b{color:var(--text)}
+.diagram-note code{background:var(--code-inline-bg);color:var(--code-inline-fg);padding:1px 5px;border-radius:4px;font-size:.9em}
+
+/* —— merge 分支圖（SVG）—— */
+.msvg{width:100%;height:auto;max-width:470px;display:block;margin:4px auto}
+.msvg .ln{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.msvg .ln.m{stroke:color-mix(in srgb,var(--green) 75%,var(--border))}
+.msvg .ln.f{stroke:color-mix(in srgb,var(--blue) 72%,var(--border))}
+.msvg .ct{stroke-width:3;fill:var(--bg-elev)}
+.msvg .ct.m{stroke:var(--green)}
+.msvg .ct.f{stroke:var(--blue)}
+.msvg .ct.mg{stroke:var(--git-orange);fill:var(--git-orange-soft)}
+.msvg .lane{font:700 12px monospace;fill:var(--green)}
+.msvg .lane.f{fill:var(--blue)}
+.msvg .cid{font:600 11px monospace;fill:var(--text-soft);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
+.msvg .hbox{fill:var(--git-orange)}
+.msvg .htx{font:800 11px monospace;fill:#fff;text-anchor:middle;letter-spacing:.04em}
+.msvg .hline{stroke:var(--git-orange);stroke-width:2}
+.msvg .mgcap{font:600 11px sans-serif;fill:var(--git-orange);text-anchor:middle}
+
+/* —— fork 三角關係（互動 SVG）—— */
+.fsvg{width:100%;height:auto;max-width:460px;display:block;margin:4px auto}
+.fnode rect{fill:var(--bg-elev);stroke:var(--border);stroke-width:2;transition:.2s}
+.fnode.active rect{stroke:var(--git-orange);stroke-width:2.5;fill:var(--git-orange-soft)}
+.fnode .t1{font:700 13px sans-serif;fill:var(--text);text-anchor:middle}
+.fnode .t2{font:600 11px monospace;fill:var(--text-soft);text-anchor:middle}
+.farrow{fill:none;stroke:var(--git-orange);stroke-width:3;stroke-linecap:round}
+.flabel{font:700 12px sans-serif;fill:var(--git-orange);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:round}
+
+/* —— 動畫 commit 圖（HEAD / rebase 共用）—— */
+.cg{width:100%;height:auto;max-width:480px;display:block;margin:6px auto}
+.cg circle,.cg line{transition:cx .55s cubic-bezier(.4,0,.2,1),cy .55s cubic-bezier(.4,0,.2,1),x1 .55s cubic-bezier(.4,0,.2,1),y1 .55s cubic-bezier(.4,0,.2,1),x2 .55s cubic-bezier(.4,0,.2,1),y2 .55s cubic-bezier(.4,0,.2,1),opacity .4s,stroke .3s}
+.cg .pill{transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .4s}
+.cg .pill rect{transition:fill .3s}
+.cg .e{fill:var(--bg-elev);stroke-width:3}
+.cg .e.main{stroke:var(--green)}
+.cg .e.feat{stroke:var(--blue)}
+.cg .e.merge{stroke:var(--git-orange);fill:var(--git-orange-soft)}
+.cg .e.ghost{opacity:.28;stroke-dasharray:3 3}
+.cg .ln{fill:none;stroke-width:3;stroke-linecap:round}
+.cg .ln.main{stroke:color-mix(in srgb,var(--green) 75%,var(--border))}
+.cg .ln.feat{stroke:color-mix(in srgb,var(--blue) 72%,var(--border))}
+.cg .ln.ghost{opacity:.22;stroke-dasharray:4 4}
+.cg .cid{font:600 11px monospace;fill:var(--text-soft);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
+.cg .pill text{font:700 11px monospace;text-anchor:middle}
+.cg .pill.main rect{fill:color-mix(in srgb,var(--green) 16%,var(--bg-elev));stroke:color-mix(in srgb,var(--green) 48%,transparent);stroke-width:1.5}
+.cg .pill.main text{fill:var(--green)}
+.cg .pill.feat rect{fill:color-mix(in srgb,var(--blue) 15%,var(--bg-elev));stroke:color-mix(in srgb,var(--blue) 48%,transparent);stroke-width:1.5}
+.cg .pill.feat text{fill:var(--blue)}
+.cg .pill.head rect{fill:var(--git-orange)}
+.cg .pill.head text{fill:#fff}
+.cg .pill.head.detached rect{fill:var(--red)}
+.cg .pill.head .conn{stroke:var(--git-orange);stroke-width:2}
+.cg .pill.head.detached .conn{stroke:var(--red)}
+.cg-cmd{font-family:"SF Mono",Consolas,monospace;font-size:13px;background:var(--code-bg);color:var(--code-fg);border-radius:8px;padding:9px 12px;margin-top:8px;text-align:center;border:1px solid var(--border)}
+.cg-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:12px}
+.cg-nav button{background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;font-family:inherit;transition:.15s}
+.cg-nav button:hover:not(:disabled){border-color:var(--git-orange);color:var(--git-orange)}
+.cg-nav button:disabled{opacity:.38;cursor:default}
+.cg-step{font-size:12.5px;color:var(--text-soft);font-weight:600;min-width:74px;text-align:center}
+
+/* —— fetch vs pull 分層流 —— */
+.fpflow{display:flex;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding:6px 0 2px}
+.fpnode{flex:1 1 0;min-width:118px;background:var(--bg-elev);border:1px solid var(--border);border-radius:11px;padding:12px 8px;text-align:center;transition:.25s}
+.fpnode.lit{border-color:var(--git-orange);background:var(--git-orange-soft);box-shadow:0 0 0 3px var(--git-orange-soft)}
+.fpnode.dim{opacity:.4}
+.fpnode .fpic{font-size:22px;line-height:1}
+.fpnode b{display:block;font-size:13px;margin-top:4px}
+.fpnode small{color:var(--text-soft);font-size:11px;font-family:monospace;display:block;margin-top:1px}
+.fparrow{flex:0 0 50px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-faint);transition:.25s}
+.fparrow.lit{color:var(--git-orange)}
+.fparrow.dim{opacity:.3}
+.fparrow .fpsym{font-size:22px;line-height:1;font-weight:700}
+.fparrow .fpcmd{font-size:10px;font-weight:700;white-space:nowrap;margin-top:2px}
+
+/* —— 衝突互動解法 —— */
+.cf-file{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;font-family:"SF Mono",Consolas,monospace;font-size:13px;line-height:1.65}
+.cf-file .cl{padding:2px 14px;white-space:pre-wrap;color:var(--code-fg);transition:.2s}
+.cf-mk{color:#8b949e;font-weight:700}
+.cf-o{background:color-mix(in srgb,var(--green) 16%,transparent)}
+.cf-t{background:color-mix(in srgb,var(--blue) 16%,transparent)}
+.cf-file.dim-o .cf-o,.cf-file.dim-t .cf-t{opacity:.22}
+.cf-arrow{text-align:center;color:var(--git-orange);font-size:20px;margin:8px 0 4px}
+
 /* 名詞速查 */
 .glossary td:first-child{font-weight:700;white-space:nowrap;color:var(--git-orange)}
 /* 高亮起手式卡 */
@@ -947,6 +1084,14 @@ dist/
           <h3><span class="cmd-chip">git merge</span> 合併分支</h3>
           <p class="desc">功能做完後，真正把它接回主線的動作就是 <code>merge</code>。</p>
           <div class="callout danger" style="margin-top:0"><span class="ic">📍</span><div><b>一定要記住的規則：</b>你<strong>站在哪裡</strong>，就把別人<strong>合進來</strong>。要把 <code>feature/x</code> 併入 <code>main</code>，就先切到 <code>main</code> 再 merge。</div></div>
+
+          <p class="desc" style="margin-top:4px">點「合併後」看 <code>main</code> 怎麼把 <code>feature</code> 接回來（橘色 <code>HEAD</code> 全程都在 <code>main</code> 上 —— 你是「接收方」）：</p>
+          <div class="diagram">
+            <div class="diagram-scenarios" id="mergeScn"></div>
+            <div id="mergeGraph"></div>
+            <div class="diagram-note" id="mergeNote"></div>
+          </div>
+
           <div class="code" data-copy>
             <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">最常見的合併流程</span><button class="copy-btn">📋 複製</button></div>
 <pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">switch</span> main
@@ -981,6 +1126,17 @@ dist/
         </div>
 
         <div class="card">
+          <h3>🎯 HEAD 到底是什麼？點按鈕，看它怎麼移動</h3>
+          <p class="desc">理解 HEAD 最快的方法：把它當成「<strong>你現在站在哪裡</strong>」的箭頭。依序點 <strong>1 → 5</strong>，看每個指令讓 <span style="color:var(--git-orange);font-weight:700">HEAD（橘）</span>和分支指標跑到哪裡：</p>
+          <div class="diagram">
+            <div class="diagram-scenarios" id="headScn"></div>
+            <div class="ggraph" id="headGraph"></div>
+            <div class="diagram-note" id="headNote"></div>
+          </div>
+          <div class="callout tip"><span class="ic">💡</span><div><b>一句話記住：</b>commit 是「拍好的照片」，<b>分支</b>是貼在某張照片上的便利貼，<b>HEAD</b> 是「你正盯著哪張便利貼」。移動 HEAD ＝ 換你站的位置。</div></div>
+        </div>
+
+        <div class="card">
           <h3><span class="cmd-chip">git switch</span> 指到指定版本</h3>
           <p class="desc">想「回去看某個舊版本長怎樣」，或從某個舊版本「另開一條新分支」：</p>
           <div class="tbl-wrap"><table>
@@ -997,7 +1153,13 @@ dist/
 
         <div class="card">
           <h3><span class="cmd-chip">git reset</span> 把指標往回拉（未 push）</h3>
-          <p class="desc">把分支指標往回移，撤銷 <code>add</code> 或 <code>commit</code>。三種模式差在「動到哪幾層」：</p>
+          <p class="desc">把分支指標往回移，撤銷 <code>add</code> 或 <code>commit</code>。三種模式差在「動到哪幾層」—— 點按鈕看每一層是<span style="color:var(--green);font-weight:700">保留</span>還是<span style="color:var(--red);font-weight:700">清掉</span>：</p>
+          <div class="diagram">
+            <div class="diagram-scenarios" id="resetScn"></div>
+            <div class="rlayers" id="resetLayers"></div>
+            <div class="diagram-note" id="resetNote"></div>
+          </div>
+          <p class="desc" style="margin-top:18px">📋 完整對照表：</p>
           <div class="tbl-wrap"><table>
             <thead><tr><th>指令</th><th>commit</th><th>暫存區</th><th>工作區</th><th>白話</th></tr></thead>
             <tbody>
@@ -1225,6 +1387,24 @@ dist/
               </div>
             </div></div>
           </div>
+        </div>
+
+        <!-- 圖解：Fork 三角關係（互動）-->
+        <div class="card">
+          <h3>🔺 origin / upstream / 你的電腦：一張圖搞懂三者</h3>
+          <p class="desc">「貢獻別人專案」最容易暈的就是這三個倉庫的關係。點 <strong>① → ⑤</strong>，看每一步資料往哪邊流：</p>
+          <div class="diagram">
+            <div class="diagram-scenarios" id="forkScn"></div>
+            <svg class="fsvg" id="forkSvg" viewBox="0 0 460 270" role="img" aria-label="Fork 協作三角關係圖">
+              <defs><marker id="fah" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#f05033"/></marker></defs>
+              <g id="forkArrow"></g>
+              <g class="fnode" id="n-upstream"><rect x="150" y="18" width="160" height="50" rx="11"/><text class="t1" x="230" y="40">原作者倉庫</text><text class="t2" x="230" y="57">upstream</text></g>
+              <g class="fnode" id="n-origin"><rect x="14" y="200" width="166" height="52" rx="11"/><text class="t1" x="97" y="222">你的 Fork·GitHub</text><text class="t2" x="97" y="239">origin</text></g>
+              <g class="fnode" id="n-local"><rect x="280" y="200" width="166" height="52" rx="11"/><text class="t1" x="363" y="222">你的電腦</text><text class="t2" x="363" y="239">local</text></g>
+            </svg>
+            <div class="diagram-note" id="forkNote"></div>
+          </div>
+          <div class="callout info"><span class="ic">🧭</span><div><b>一句話分辨：</b><code>origin</code> ＝「<b>我的</b>那份（fork）」，<code>upstream</code> ＝「<b>原作者</b>那份」。你 push 永遠進 origin；要回饋原作者就發 PR。</div></div>
         </div>
 
         <!-- 食譜 B：把自己的作品推到（新）倉庫 -->
@@ -1783,6 +1963,150 @@ if(kickDetail){
   };
   kickSteps.forEach(n=>n.addEventListener('click',()=>showKick(n.dataset.k)));
   showKick('init');
+}
+
+/* ============================================================
+   概念圖解 1：HEAD 互動 commit 圖
+============================================================ */
+const HEAD_IDS=['A','B','C','D'];
+const headScenarios=[
+  {k:'base',btn:'1 · 剛 commit 完',n:3,main:2,feature:null,head:{branch:'main'},ghost:[],
+   note:'<b>最單純的狀態。</b><code>HEAD</code> 指著 <code>main</code>、<code>main</code> 指著最新的 commit C —— 所以你「站在」C 上。記住：<b>分支只是一個會移動的指標</b>，HEAD 則是「指標的指標」。'},
+  {k:'newbranch',btn:'2 · git switch -c feature',n:3,main:2,feature:2,head:{branch:'feature'},ghost:[],
+   note:'開了 <code>feature</code> 並切過去。注意：<b>沒有產生新 commit</b>，C 也沒變 —— 只是多了一個 <code>feature</code> 指標同樣指著 C，而 <code>HEAD</code> 改成指 <code>feature</code>。<code>main</code> 完全沒動。'},
+  {k:'commit',btn:'3 · 在 feature 上 commit',n:4,main:2,feature:3,head:{branch:'feature'},ghost:[],
+   note:'在 <code>feature</code> 上做一筆新 commit D。<code>feature</code> 和 <code>HEAD</code> <b>一起往前</b>移到 D；<code>main</code> 還留在 C。兩條線從這裡開始分岔 —— 這就是「分支」。'},
+  {k:'detach',btn:'4 · git switch --detach B',n:3,main:2,feature:null,head:{commit:1,detached:true},ghost:[],
+   note:'<b>Detached HEAD（分離頭指標）。</b><code>HEAD</code> 這次<b>直接指在 commit B 上</b>，後面沒有分支跟著。適合「回去看舊版本」，但在這裡做的 commit 不屬於任何分支，切走就容易弄丟 —— 想保留就馬上 <code>git switch -c 新分支</code> 接住。'},
+  {k:'resethard',btn:'5 · git reset --hard B',n:3,main:1,feature:null,head:{branch:'main'},ghost:[2],
+   note:'在 <code>main</code> 上 <code>reset --hard B</code>：把 <code>main</code> 指標<b>拉回 B</b>，<code>HEAD</code> 跟著回到 B。C 並沒有真的消失，只是沒有指標指著它了（變成被丟下的虛線圈）。<b>還救得回 —— <code>git reflog</code> 找得到 C。</b>'}
+];
+const headGraph=document.getElementById('headGraph');
+if(headGraph){
+  const scnWrap=document.getElementById('headScn');
+  const note=document.getElementById('headNote');
+  const renderHead=s=>{
+    const headCol=s.head.branch?(s.head.branch==='main'?s.main:s.feature):s.head.commit;
+    let hRow='',bRow='',rRow='',iRow='';
+    for(let i=0;i<s.n;i++){
+      let hc='';
+      if(i===headCol){
+        const det=s.head.detached;
+        const sub=s.head.branch?('→ '+s.head.branch):'(detached)';
+        hc='<span class="ghead-pill'+(det?' detached':'')+'"><b>HEAD</b><span class="sub">'+sub+'</span><span class="down">▼</span></span>';
+      }
+      hRow+='<div class="gcell">'+hc+'</div>';
+      let bc='';
+      if(s.main===i)bc+='<span class="gpill main">main</span>';
+      if(s.feature===i)bc+='<span class="gpill feature">feature</span>';
+      bRow+='<div class="gcell">'+bc+'</div>';
+      const ghost=s.ghost.includes(i);
+      const cur=(i===headCol)&&!ghost;
+      rRow+='<div class="gcell"><span class="gdot'+(cur?' cur':'')+(ghost?' ghost':'')+'"></span></div>';
+      iRow+='<div class="gcell'+(ghost?' ghost':'')+'">'+HEAD_IDS[i]+'</div>';
+    }
+    headGraph.style.setProperty('--rail-left',(50/s.n)+'%');
+    headGraph.style.setProperty('--rail-right',(50/s.n)+'%');
+    headGraph.innerHTML='<div class="grow ghead-row">'+hRow+'</div><div class="grow gbranch-row">'+bRow+'</div><div class="grow grail-row">'+rRow+'</div><div class="grow gid-row">'+iRow+'</div>';
+    note.innerHTML=s.note;
+    scnWrap.querySelectorAll('.scn-btn').forEach(b=>b.classList.toggle('on',b.dataset.k===s.k));
+  };
+  scnWrap.innerHTML=headScenarios.map((s,i)=>'<button class="scn-btn'+(i===0?' on':'')+'" data-k="'+s.k+'">'+s.btn+'</button>').join('');
+  scnWrap.querySelectorAll('.scn-btn').forEach(b=>b.addEventListener('click',()=>renderHead(headScenarios.find(x=>x.k===b.dataset.k))));
+  renderHead(headScenarios[0]);
+}
+
+/* ============================================================
+   概念圖解 2：reset 三層分層
+============================================================ */
+const resetModes=[
+  {k:'soft',btn:'--soft',label:'git reset --soft HEAD~1',risk:'safe',risktx:'低風險',
+   layers:[{s:'move',t:'指標往回'},{s:'keep',t:'保留'},{s:'keep',t:'保留'}],
+   note:'只把 commit 指標退回一格，<b>暫存區、工作區都不動</b>。結果：剛剛那筆 commit 的內容變回「已 add、等著被重新 commit」的狀態 —— 最適合「<b>commit 想重做、但內容我全要</b>」。'},
+  {k:'mixed',btn:'(預設)',label:'git reset HEAD~1',risk:'mid',risktx:'中風險',
+   layers:[{s:'move',t:'指標往回'},{s:'wipe',t:'清掉'},{s:'keep',t:'保留'}],
+   note:'預設模式。指標退回，<b>暫存區一起清空</b>，但工作區保留。結果：改動回到「<b>還沒 git add</b>」的工作區狀態，你可以重新挑要 add 哪些。'},
+  {k:'hard',btn:'--hard',label:'git reset --hard HEAD~1',risk:'high',risktx:'高風險',
+   layers:[{s:'move',t:'指標往回'},{s:'wipe',t:'清掉'},{s:'wipe',t:'清掉'}],
+   note:'指標退回，<b>暫存區和工作區一起清掉</b> —— 那段修改會直接消失。<b style="color:var(--red)">最危險</b>：動手前先確定內容真的不要了，或先 <code>git stash</code>／開備份分支。退錯馬上 <code>git reflog</code>。'}
+];
+const resetLayers=document.getElementById('resetLayers');
+if(resetLayers){
+  const RNAMES=[['📦','倉庫 commit','版本歷史（一定往回移）'],['🟨','暫存區 staging','git add 後挑好的內容'],['📝','工作區 working','你正在編輯的檔案']];
+  const scnWrap=document.getElementById('resetScn');
+  const note=document.getElementById('resetNote');
+  const renderReset=m=>{
+    resetLayers.innerHTML=m.layers.map((L,i)=>'<div class="rlayer '+L.s+'"><span class="ric">'+RNAMES[i][0]+'</span><span class="rname"><b>'+RNAMES[i][1]+'</b><small>'+RNAMES[i][2]+'</small></span><span class="rstate">'+L.t+'</span></div>').join('');
+    note.innerHTML='<b style="color:var(--git-orange)">'+m.label+'</b> <span class="risk '+m.risk+'">'+m.risktx+'</span><br>'+m.note;
+    scnWrap.querySelectorAll('.scn-btn').forEach(b=>b.classList.toggle('on',b.dataset.k===m.k));
+  };
+  scnWrap.innerHTML=resetModes.map((m,i)=>'<button class="scn-btn'+(i===0?' on':'')+'" data-k="'+m.k+'">'+m.btn+'</button>').join('');
+  scnWrap.querySelectorAll('.scn-btn').forEach(b=>b.addEventListener('click',()=>renderReset(resetModes.find(x=>x.k===b.dataset.k))));
+  renderReset(resetModes[0]);
+}
+
+/* ============================================================
+   概念圖解 3：merge 分支圖（合併前 / 合併後）
+============================================================ */
+const buildMerge=after=>'<svg class="msvg" viewBox="0 0 470 168" role="img" aria-label="分支合併圖">'+
+  '<text class="lane" x="6" y="56">main</text><text class="lane f" x="6" y="132">feature</text>'+
+  '<path class="ln m" d="M95 52 H'+(after?390:280)+'"/>'+
+  '<path class="ln f" d="M170 52 L235 128 H295'+(after?' L390 52':'')+'"/>'+
+  '<circle class="ct m" cx="95" cy="52" r="11"/><circle class="ct m" cx="170" cy="52" r="11"/><circle class="ct m" cx="280" cy="52" r="11"/>'+
+  '<circle class="ct f" cx="235" cy="128" r="11"/><circle class="ct f" cx="295" cy="128" r="11"/>'+
+  (after?'<circle class="ct mg" cx="390" cy="52" r="12"/>':'')+
+  '<text class="cid" x="95" y="74">A</text><text class="cid" x="170" y="74">B</text><text class="cid" x="280" y="74">C</text>'+
+  '<text class="cid" x="235" y="150">D</text><text class="cid" x="295" y="150">E</text>'+
+  (after?'<text class="cid" x="390" y="74">M</text>':'')+
+  '<rect class="hbox" x="'+(after?366:256)+'" y="6" width="48" height="18" rx="5"/>'+
+  '<text class="htx" x="'+(after?390:280)+'" y="19">HEAD</text>'+
+  '<line class="hline" x1="'+(after?390:280)+'" y1="24" x2="'+(after?390:280)+'" y2="39"/></svg>';
+const mergeData=[
+  {k:'before',btn:'合併前',after:false,note:'合併前：<code>feature</code> 從 B 分出去後，自己長出 D、E；<code>main</code> 還停在 C。你先 <code>git switch main</code>，<code>HEAD</code> 就停在 <code>main</code>（C）。'},
+  {k:'after',btn:'合併後 ▶',after:true,note:'<code>git merge feature</code>：在 <code>main</code> 上產生一筆<b>合併提交 M</b>，它同時接著 C 和 E —— 兩條線在這裡會合。<code>main</code> 和 <code>HEAD</code> 一起前進到 M，<code>feature</code> 不動。'}
+];
+const mergeGraph=document.getElementById('mergeGraph');
+if(mergeGraph){
+  const scnWrap=document.getElementById('mergeScn');
+  const note=document.getElementById('mergeNote');
+  const renderMerge=m=>{
+    mergeGraph.innerHTML=buildMerge(m.after);
+    note.innerHTML=m.note;
+    scnWrap.querySelectorAll('.scn-btn').forEach(b=>b.classList.toggle('on',b.dataset.k===m.k));
+  };
+  scnWrap.innerHTML=mergeData.map((m,i)=>'<button class="scn-btn'+(i===0?' on':'')+'" data-k="'+m.k+'">'+m.btn+'</button>').join('');
+  scnWrap.querySelectorAll('.scn-btn').forEach(b=>b.addEventListener('click',()=>renderMerge(mergeData.find(x=>x.k===b.dataset.k))));
+  renderMerge(mergeData[0]);
+}
+
+/* ============================================================
+   概念圖解 4：Fork 三角關係（互動）
+============================================================ */
+const forkSteps=[
+  {k:'fork',btn:'① Fork',d:'M210 72 L112 196',lx:138,ly:120,lt:'① Fork',act:['upstream','origin'],
+   note:'在 GitHub 網站按 <b>Fork</b>：把原作者倉庫<b>複製一份到你的帳號</b>底下，這份就叫 <code>origin</code>（你自己的遠端）。'},
+  {k:'clone',btn:'② clone',d:'M184 219 L274 219',lx:229,ly:210,lt:'② clone',act:['origin','local'],
+   note:'<code>git clone</code> 你自己的 fork：把 <code>origin</code> <b>整包抓到你的電腦</b>變成 <code>local</code>，就能開始改 code。'},
+  {k:'push',btn:'③ 改完 push',d:'M274 236 L184 236',lx:229,ly:252,lt:'③ push',act:['local','origin'],
+   note:'<code>git push</code>：把本機 commit <b>推回你自己的 fork（origin）</b>。注意：你動到的<b>永遠是自己的 fork</b>，碰不到原作者。'},
+  {k:'pr',btn:'④ Pull Request',d:'M126 196 L224 74',lx:206,ly:150,lt:'④ PR',act:['origin','upstream'],
+   note:'在 GitHub 發 <b>Pull Request</b>：禮貌地<b>請原作者把你的改動合併進 upstream</b>。要不要採用，由原作者決定。'},
+  {k:'sync',btn:'⑤ 同步原作者',d:'M252 72 L356 196',lx:332,ly:120,lt:'⑤ fetch upstream',act:['upstream','local'],
+   note:'原作者後來又更新了：<code>git fetch upstream</code> + <code>merge</code>，把 <b>upstream 的新進度同步</b>回你的 local（再 push 回 origin 就跟上了）。'}
+];
+const forkArrow=document.getElementById('forkArrow');
+if(forkArrow){
+  const scnWrap=document.getElementById('forkScn');
+  const note=document.getElementById('forkNote');
+  const renderFork=s=>{
+    forkArrow.innerHTML='<path class="farrow" d="'+s.d+'" marker-end="url(#fah)"/><text class="flabel" x="'+s.lx+'" y="'+s.ly+'">'+s.lt+'</text>';
+    ['upstream','origin','local'].forEach(id=>document.getElementById('n-'+id).classList.toggle('active',s.act.includes(id)));
+    note.innerHTML=s.note;
+    scnWrap.querySelectorAll('.scn-btn').forEach(b=>b.classList.toggle('on',b.dataset.k===s.k));
+  };
+  scnWrap.innerHTML=forkSteps.map((s,i)=>'<button class="scn-btn'+(i===0?' on':'')+'" data-k="'+s.k+'">'+s.btn+'</button>').join('');
+  scnWrap.querySelectorAll('.scn-btn').forEach(b=>b.addEventListener('click',()=>renderFork(forkSteps.find(x=>x.k===b.dataset.k))));
+  renderFork(forkSteps[0]);
 }
 
 /* ============================================================
