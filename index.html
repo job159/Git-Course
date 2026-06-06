@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Git 40% 高頻指令 · 互動教學</title>
+<meta name="description" content="只學最常用的 Git 核心指令，就能應付 90% 的日常開發。互動式教學，含指向、換向、載別人專案、GitHub 協作與急救速查。" />
+<style>
+/* ============================================================
+   設計變數 / 主題
+============================================================ */
+:root{
+  --git-orange:#f05033;
+  --git-orange-soft:#fbe5e0;
+  --blue:#2f81f7;
+  --green:#2da44e;
+  --yellow:#bf8700;
+  --red:#cf222e;
+  --purple:#8250df;
+
+  --bg:#f6f8fa;
+  --bg-elev:#ffffff;
+  --sidebar-bg:#1c2128;
+  --sidebar-fg:#adbac7;
+  --sidebar-active:#2f81f7;
+  --card:#ffffff;
+  --border:#d0d7de;
+  --border-soft:#eaeef2;
+  --text:#1f2328;
+  --text-soft:#636c76;
+  --text-faint:#8b949e;
+  --code-bg:#0d1117;
+  --code-fg:#e6edf3;
+  --code-inline-bg:#eff1f3;
+  --code-inline-fg:#cf222e;
+  --shadow:0 1px 3px rgba(31,35,40,.08), 0 8px 24px rgba(31,35,40,.06);
+  --shadow-lg:0 8px 32px rgba(31,35,40,.16);
+  --radius:14px;
+  --radius-sm:8px;
+  --maxw:1080px;
+}
+[data-theme="dark"]{
+  --bg:#0d1117;
+  --bg-elev:#161b22;
+  --sidebar-bg:#0a0c10;
+  --sidebar-fg:#9198a1;
+  --card:#161b22;
+  --border:#30363d;
+  --border-soft:#21262d;
+  --text:#e6edf3;
+  --text-soft:#9198a1;
+  --text-faint:#6e7681;
+  --code-bg:#010409;
+  --code-fg:#e6edf3;
+  --code-inline-bg:#262c36;
+  --code-inline-fg:#ff7b72;
+  --git-orange-soft:#3a1d16;
+  --shadow:0 1px 3px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei","Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  transition:background .3s ease,color .3s ease;
+}
+code,kbd,pre{font-family:"SF Mono","Cascadia Code","JetBrains Mono","Fira Code",Consolas,"Courier New",monospace}
+
+/* ============================================================
+   版面：側欄 + 主內容
+============================================================ */
+.layout{display:flex;min-height:100vh}
+
+.sidebar{
+  width:280px;flex-shrink:0;
+  background:var(--sidebar-bg);
+  color:var(--sidebar-fg);
+  position:sticky;top:0;align-self:flex-start;
+  height:100vh;overflow-y:auto;
+  padding:0 0 40px;
+  transition:transform .3s ease;
+  z-index:50;
+}
+.sidebar::-webkit-scrollbar{width:8px}
+.sidebar::-webkit-scrollbar-thumb{background:#30363d;border-radius:8px}
+
+.brand{
+  padding:22px 22px 16px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  position:sticky;top:0;background:var(--sidebar-bg);z-index:2;
+}
+.brand-logo{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,#f05033,#f7752b);
+  display:grid;place-items:center;font-size:20px;
+  box-shadow:0 4px 12px rgba(240,80,51,.4);
+}
+.brand-txt b{color:#fff;font-size:16px;display:block;line-height:1.2}
+.brand-txt span{font-size:12px;color:#768390}
+
+.search-wrap{padding:14px 16px 8px}
+.search-box{position:relative}
+.search-box input{
+  width:100%;padding:9px 12px 9px 34px;
+  background:#22272e;border:1px solid #30363d;border-radius:8px;
+  color:#e6edf3;font-size:13px;outline:none;transition:border .2s;
+}
+.search-box input:focus{border-color:var(--blue)}
+.search-box svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.5}
+
+.nav{padding:8px 10px}
+.nav-group-label{
+  font-size:11px;text-transform:uppercase;letter-spacing:.07em;
+  color:#636c76;padding:14px 12px 6px;font-weight:700;
+}
+.nav a{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;border-radius:8px;
+  color:var(--sidebar-fg);text-decoration:none;font-size:14px;
+  transition:background .15s,color .15s;position:relative;
+}
+.nav a .ico{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.nav a:hover{background:rgba(255,255,255,.05);color:#fff}
+.nav a.active{background:rgba(47,129,247,.16);color:#fff;font-weight:600}
+.nav a.active::before{
+  content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:3px;
+  background:var(--sidebar-active);border-radius:3px;
+}
+.nav a.special{color:#ffd9a8}
+.nav a.special:hover{color:#fff}
+
+.content{flex:1;min-width:0;padding:0 0 80px}
+.content-inner{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+
+/* ============================================================
+   頂部 bar（行動裝置 + 主題切換）
+============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  display:flex;align-items:center;gap:12px;
+  padding:12px 28px;
+  background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border-soft);
+}
+.menu-btn{display:none;background:none;border:1px solid var(--border);border-radius:8px;
+  color:var(--text);width:38px;height:38px;cursor:pointer;font-size:18px}
+.topbar .spacer{flex:1}
+.topbar .crumb{font-size:13px;color:var(--text-soft);font-weight:600}
+.theme-btn{
+  background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;
+  width:38px;height:38px;cursor:pointer;font-size:16px;color:var(--text);
+  display:grid;place-items:center;transition:.2s;
+}
+.theme-btn:hover{border-color:var(--git-orange);transform:translateY(-1px)}
+
+/* ============================================================
+   Hero
+============================================================ */
+.hero{
+  text-align:center;padding:54px 20px 38px;
+  position:relative;overflow:hidden;
+}
+.hero .eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--git-orange-soft);color:var(--git-orange);
+  font-size:13px;font-weight:700;padding:6px 14px;border-radius:999px;margin-bottom:18px;
+}
+.hero h1{
+  font-size:clamp(28px,5vw,46px);line-height:1.15;letter-spacing:-.02em;
+  margin-bottom:16px;font-weight:800;
+}
+.hero h1 .grad{
+  background:linear-gradient(120deg,#f05033,#f7752b 60%,#fbb040);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p.lead{font-size:clamp(15px,2.2vw,19px);color:var(--text-soft);max-width:620px;margin:0 auto 26px}
+.hero-stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+.stat{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px 20px;min-width:120px;box-shadow:var(--shadow);
+}
+.stat b{display:block;font-size:26px;color:var(--git-orange);line-height:1}
+.stat span{font-size:12px;color:var(--text-soft)}
+
+/* ============================================================
+   區段 / 卡片
+============================================================ */
+section.block{padding:34px 0;scroll-margin-top:20px}
+.section-head{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.section-head .badge-num{
+  width:42px;height:42px;flex-shrink:0;border-radius:12px;
+  display:grid;place-items:center;font-size:20px;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,#57606a,#424a53);box-shadow:var(--shadow);
+}
+.section-head h2{font-size:clamp(22px,3.4vw,30px);letter-spacing:-.01em}
+.section-head .tag{
+  font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;
+  background:var(--git-orange-soft);color:var(--git-orange);align-self:center;
+}
+.section-sub{color:var(--text-soft);font-size:15px;margin:4px 0 22px;padding-left:56px}
+@media(max-width:600px){.section-sub{padding-left:0}}
+
+/* 主題色：每個分類一個色 */
+.theme-common .badge-num{background:linear-gradient(135deg,#2da44e,#1a7f37)}
+.theme-switch .badge-num{background:linear-gradient(135deg,#2f81f7,#1f6feb)}
+.theme-point .badge-num{background:linear-gradient(135deg,#8250df,#6639ba)}
+.theme-clone .badge-num{background:linear-gradient(135deg,#0aa6b8,#08808f)}
+.theme-collab .badge-num{background:linear-gradient(135deg,#f05033,#d33820)}
+.theme-rescue .badge-num{background:linear-gradient(135deg,#bf8700,#9a6700)}
+.theme-recipe .badge-num{background:linear-gradient(135deg,#d6336c,#a61e4d)}
+.theme-start .badge-num{background:linear-gradient(135deg,#f05033,#f7752b)}
+
+/* 比喻小卡 */
+.analogy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px;margin:14px 0}
+.analogy{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:13px 10px;text-align:center;transition:.2s}
+.analogy:hover{border-color:var(--git-orange);transform:translateY(-2px)}
+.analogy .em{font-size:27px;display:block;margin-bottom:5px}
+.analogy b{display:block;color:var(--git-orange);font-size:14px;margin-bottom:1px}
+.analogy small{color:var(--text-soft);font-size:12px;line-height:1.3;display:block}
+
+/* 食譜編號膠囊 */
+.recipe-pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:#fff;padding:4px 12px;border-radius:999px;letter-spacing:.02em;margin-bottom:2px}
+.recipe-pill.a{background:linear-gradient(135deg,#0aa6b8,#08808f)}
+.recipe-pill.b{background:linear-gradient(135deg,#2f81f7,#1f6feb)}
+.recipe-pill.c{background:linear-gradient(135deg,#cf222e,#a40e26)}
+.recipe-pill.d{background:linear-gradient(135deg,#2da44e,#1a7f37)}
+
+/* 起手式：互動指令步驟 */
+.kick-steps{display:flex;flex-direction:column;gap:8px;margin:12px 0 0}
+.kick-step{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:var(--code-bg);border:1px solid var(--border);border-left:3px solid transparent;
+  border-radius:10px;padding:11px 14px;cursor:pointer;transition:.18s;font-family:inherit;
+}
+.kick-step:hover{border-color:var(--git-orange)}
+.kick-step.on{border-color:var(--git-orange);border-left-color:var(--git-orange)}
+.kick-step .n{
+  width:24px;height:24px;flex-shrink:0;border-radius:50%;
+  background:var(--git-orange);color:#fff;display:grid;place-items:center;
+  font-size:12px;font-weight:700;
+}
+.kick-step code{flex:1;min-width:0;font-size:13.5px;color:var(--code-fg);white-space:nowrap;overflow-x:auto}
+.kick-step .chev{color:var(--text-faint);font-size:12px;flex-shrink:0;white-space:nowrap}
+.kick-step.on .chev{color:var(--git-orange)}
+.kick-detail{
+  margin-top:12px;background:var(--bg);border:1px dashed var(--border);
+  border-radius:10px;padding:16px 18px;font-size:14.5px;min-height:62px;line-height:1.75;
+}
+.kick-detail .dt{font-weight:700;font-size:15px;margin-bottom:7px;color:var(--git-orange)}
+.kick-detail code{background:var(--code-inline-bg);color:var(--code-inline-fg);padding:1.5px 6px;border-radius:5px;font-size:.9em;white-space:nowrap}
+.kick-detail u{text-decoration-color:var(--git-orange);text-underline-offset:2px}
+
+/* 名詞速查 */
+.glossary td:first-child{font-weight:700;white-space:nowrap;color:var(--git-orange)}
+/* 高亮起手式卡 */
+.card.spotlight{border-color:var(--git-orange);background:linear-gradient(180deg,var(--git-orange-soft),var(--card) 60%)}
+
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px 26px;margin-bottom:20px;box-shadow:var(--shadow);
+  transition:border-color .2s, transform .2s;
+}
+.card:hover{border-color:var(--git-orange)}
+.card h3{font-size:18px;margin-bottom:6px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.card h3 .cmd-chip{
+  font-family:inherit;background:var(--code-inline-bg);color:var(--code-inline-fg);
+  font-size:14px;padding:2px 9px;border-radius:6px;font-weight:600;
+}
+.card .desc{color:var(--text-soft);font-size:14.5px;margin-bottom:14px}
+.card .desc.lead-quote{
+  border-left:3px solid var(--git-orange);padding-left:12px;font-style:normal;
+  background:var(--git-orange-soft);border-radius:0 8px 8px 0;padding:10px 14px;color:var(--text);
+}
+
+/* ============================================================
+   程式碼區塊 + 複製
+============================================================ */
+.code{
+  position:relative;background:var(--code-bg);border-radius:10px;
+  margin:12px 0;overflow:hidden;border:1px solid var(--border);
+}
+.code-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 12px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);
+}
+.code-head .dots{display:flex;gap:6px}
+.code-head .dots i{width:11px;height:11px;border-radius:50%}
+.code-head .dots i:nth-child(1){background:#ff5f57}
+.code-head .dots i:nth-child(2){background:#febc2e}
+.code-head .dots i:nth-child(3){background:#28c840}
+.code-head .label{font-size:11px;color:#768390;font-family:inherit}
+.copy-btn{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  color:#adbac7;font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;transition:.15s;
+}
+.copy-btn:hover{background:rgba(255,255,255,.16);color:#fff}
+.copy-btn.done{background:rgba(45,164,78,.25);color:#3fb950;border-color:transparent}
+pre.code-body{padding:14px 16px;overflow-x:auto;margin:0}
+pre.code-body code{color:var(--code-fg);font-size:13.5px;line-height:1.75;display:block;white-space:pre}
+/* 語法上色（輕量） */
+.tok-cmd{color:#79c0ff;font-weight:600}      /* git */
+.tok-sub{color:#d2a8ff}                        /* 子命令 */
+.tok-flag{color:#ffa657}                       /* -flag */
+.tok-str{color:#a5d6ff}                        /* "字串" */
+.tok-cmt{color:#768390;font-style:italic}      /* # 註解 */
+.tok-var{color:#7ee787}                        /* <變數> */
+
+/* 單行可複製指令（inline-copy） */
+.cmd-line{
+  display:flex;align-items:center;gap:10px;background:var(--code-bg);
+  border:1px solid var(--border);border-radius:8px;padding:8px 10px 8px 14px;margin:8px 0;
+}
+.cmd-line code{color:var(--code-fg);font-size:13.5px;flex:1;overflow-x:auto;white-space:nowrap}
+.cmd-line .mini-copy{
+  background:transparent;border:none;color:#768390;cursor:pointer;font-size:14px;
+  padding:4px 6px;border-radius:6px;flex-shrink:0;transition:.15s;
+}
+.cmd-line .mini-copy:hover{background:rgba(255,255,255,.1);color:#fff}
+.cmd-line .mini-copy.done{color:#3fb950}
+
+/* ============================================================
+   表格
+============================================================ */
+.tbl-wrap{overflow-x:auto;margin:14px 0;border:1px solid var(--border);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:420px}
+thead th{
+  background:var(--bg);text-align:left;padding:11px 14px;font-weight:700;
+  border-bottom:2px solid var(--border);white-space:nowrap;color:var(--text);
+}
+tbody td{padding:10px 14px;border-bottom:1px solid var(--border-soft);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--bg)}
+td code,th code,p code,li code,.desc code{
+  background:var(--code-inline-bg);color:var(--code-inline-fg);
+  padding:1.5px 6px;border-radius:5px;font-size:.88em;white-space:nowrap;
+}
+
+/* ============================================================
+   提示框 callout
+============================================================ */
+.callout{
+  border-radius:10px;padding:13px 16px 13px 14px;margin:14px 0;font-size:14px;
+  border:1px solid var(--border);border-left-width:4px;display:flex;gap:11px;align-items:flex-start;
+  background:var(--bg-elev);
+}
+.callout .ic{font-size:17px;line-height:1.4;flex-shrink:0}
+.callout b{font-weight:700}
+.callout.tip{border-left-color:var(--green);background:color-mix(in srgb,var(--green) 7%,var(--bg-elev))}
+.callout.warn{border-left-color:var(--yellow);background:color-mix(in srgb,var(--yellow) 9%,var(--bg-elev))}
+.callout.danger{border-left-color:var(--red);background:color-mix(in srgb,var(--red) 7%,var(--bg-elev))}
+.callout.info{border-left-color:var(--blue);background:color-mix(in srgb,var(--blue) 7%,var(--bg-elev))}
+
+/* 風險徽章 */
+.risk{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.risk.safe{background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
+.risk.mid{background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--yellow)}
+.risk.high{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
+
+/* ============================================================
+   互動：四區域流程圖
+============================================================ */
+.flow{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:8px 0 4px;
+}
+@media(max-width:760px){.flow{grid-template-columns:1fr 1fr}}
+.flow-node{
+  background:var(--card);border:2px solid var(--border);border-radius:12px;
+  padding:16px 14px;text-align:center;cursor:pointer;transition:.2s;position:relative;
+}
+.flow-node:hover,.flow-node.on{border-color:var(--git-orange);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.flow-node .emoji{font-size:30px;display:block;margin-bottom:6px}
+.flow-node b{display:block;font-size:15px;margin-bottom:2px}
+.flow-node small{color:var(--text-soft);font-size:12px}
+.flow-node .arrow{
+  position:absolute;right:-12px;top:50%;transform:translateY(-50%);
+  font-size:18px;color:var(--git-orange);z-index:2;
+}
+@media(max-width:760px){.flow-node .arrow{display:none}}
+.flow-detail{
+  margin-top:14px;background:var(--bg);border:1px dashed var(--border);
+  border-radius:10px;padding:14px 16px;font-size:14px;min-height:54px;
+}
+.flow-detail .ph{color:var(--text-faint)}
+
+/* ============================================================
+   互動：分頁 tabs
+============================================================ */
+.tabs{margin:14px 0}
+.tab-btns{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:0}
+.tab-btn{
+  background:none;border:none;border-bottom:2px solid transparent;
+  padding:9px 14px;cursor:pointer;color:var(--text-soft);font-size:14px;font-weight:600;
+  transition:.15s;margin-bottom:-1px;border-radius:6px 6px 0 0;
+}
+.tab-btn:hover{color:var(--text);background:var(--bg)}
+.tab-btn.active{color:var(--git-orange);border-bottom-color:var(--git-orange)}
+.tab-panel{display:none;padding-top:14px;animation:fade .25s ease}
+.tab-panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ============================================================
+   互動：手風琴 accordion
+============================================================ */
+.acc{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;background:var(--card)}
+.acc-head{
+  width:100%;text-align:left;background:none;border:none;cursor:pointer;
+  padding:14px 16px;font-size:15px;font-weight:600;color:var(--text);
+  display:flex;align-items:center;gap:10px;transition:background .15s;
+}
+.acc-head:hover{background:var(--bg)}
+.acc-head .chev{margin-left:auto;transition:transform .25s;color:var(--text-soft);font-size:13px}
+.acc-head.open .chev{transform:rotate(90deg)}
+.acc-head .sig{font-size:13px}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.acc-body-inner{padding:0 16px 16px}
+
+/* 情境步驟流 */
+.steps{counter-reset:s;margin:10px 0}
+.step{position:relative;padding:2px 0 14px 38px;border-left:2px solid var(--border-soft);margin-left:12px}
+.step:last-child{border-left-color:transparent}
+.step::before{
+  counter-increment:s;content:counter(s);
+  position:absolute;left:-13px;top:0;width:26px;height:26px;border-radius:50%;
+  background:var(--git-orange);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700;
+}
+.step b{font-size:14.5px}
+
+/* 速查表卡 */
+.cheat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:10px}
+.cheat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.cheat .q{font-size:13px;color:var(--text-soft);margin-bottom:8px}
+.cheat .a{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cheat .a code{font-size:13px}
+
+/* misconception 對照 */
+.vs-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.vs-grid .vs-h{padding:9px 14px;font-weight:700;font-size:13px;text-align:center}
+.vs-grid .vs-h.bad{background:color-mix(in srgb,var(--red) 12%,var(--card));color:var(--red)}
+.vs-grid .vs-h.good{background:color-mix(in srgb,var(--green) 12%,var(--card));color:var(--green)}
+.vs-grid .vs-c{padding:10px 14px;border-top:1px solid var(--border-soft);font-size:14px}
+.vs-grid .vs-c.l{border-right:1px solid var(--border-soft)}
+
+/* footer */
+.foot{text-align:center;padding:40px 20px;color:var(--text-soft);font-size:13px;border-top:1px solid var(--border-soft);margin-top:30px}
+.foot a{color:var(--git-orange);text-decoration:none}
+
+/* 回到頂部 */
+.totop{
+  position:fixed;right:22px;bottom:22px;width:46px;height:46px;border-radius:50%;
+  background:var(--git-orange);color:#fff;border:none;cursor:pointer;font-size:20px;
+  box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;z-index:60;
+}
+.totop.show{opacity:1;pointer-events:auto}
+.totop:hover{transform:translateY(-3px) scale(1.05)}
+
+/* 搜尋無結果隱藏 */
+.hide-by-search{display:none !important}
+.search-empty{display:none;text-align:center;color:var(--text-soft);padding:30px}
+
+/* 遮罩（行動裝置側欄） */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:45}
+.overlay.show{display:block}
+
+/* 進度勾選 */
+.done-toggle{
+  margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12px;
+  color:var(--text-soft);cursor:pointer;user-select:none;border:1px solid var(--border);
+  padding:4px 10px;border-radius:999px;background:var(--bg-elev);transition:.15s;
+}
+.done-toggle:hover{border-color:var(--green)}
+.done-toggle.checked{background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--green);border-color:transparent}
+.done-toggle .box{width:14px;height:14px;border:2px solid currentColor;border-radius:4px;display:grid;place-items:center;font-size:10px}
+
+@media(max-width:980px){
+  .sidebar{position:fixed;left:0;top:0;transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0);box-shadow:var(--shadow-lg)}
+  .menu-btn{display:grid;place-items:center}
+}
+@media(max-width:600px){
+  .content-inner{padding:0 16px}
+  .topbar{padding:10px 16px}
+  .card{padding:18px 16px}
+  .vs-grid{grid-template-columns:1fr}
+  .vs-grid .vs-c.l{border-right:none}
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ===================== 側欄 ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">🌿</div>
+      <div class="brand-txt">
+        <b>Git 40% 指南</b>
+        <span>高頻指令 · 互動教學</span>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="search" type="text" placeholder="搜尋指令或情境…" autocomplete="off" />
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <div class="nav-group-label">基礎</div>
+      <a href="#kickstart" class="special"><span class="ico">🚀</span> 起手式 · 第一次上傳</a>
+      <a href="#overview"><span class="ico">🧭</span> 總覽 · 核心觀念</a>
+      <a href="#setup"><span class="ico">⚙️</span> 第一次設定</a>
+      <a href="#common"><span class="ico">🟢</span> 常用指令（每天用）</a>
+
+      <div class="nav-group-label">四大主題</div>
+      <a href="#switch" class="special"><span class="ico">🔀</span> 換向 · 切換分支</a>
+      <a href="#point" class="special"><span class="ico">🎯</span> 指向 · 版本移動</a>
+      <a href="#clone" class="special"><span class="ico">📥</span> 載別人 · 取得專案</a>
+      <a href="#collab" class="special"><span class="ico">🤝</span> 跟別人合作 GitHub</a>
+
+      <div class="nav-group-label">實戰 · 急救</div>
+      <a href="#recipes" class="special"><span class="ico">🍳</span> 組合技 · 實戰食譜</a>
+      <a href="#rescue"><span class="ico">🛟</span> 急救與排錯</a>
+      <a href="#workflow"><span class="ico">📅</span> 每日工作流</a>
+      <a href="#cheat"><span class="ico">📋</span> 指令速查表</a>
+    </nav>
+  </aside>
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== 主內容 ===================== -->
+  <main class="content">
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="選單">☰</button>
+      <span class="crumb" id="crumb">Git 40% 高頻指令</span>
+      <span class="spacer"></span>
+      <button class="theme-btn" id="themeBtn" aria-label="切換主題" title="切換深色/淺色">🌙</button>
+    </div>
+
+    <div class="content-inner">
+
+      <!-- ===== Hero ===== -->
+      <header class="hero">
+        <span class="eyebrow">✨ 只學 40%，搞定 90% 的日常</span>
+        <h1>用最常用的指令<br><span class="grad">把 Git 真正學會</span></h1>
+        <p class="lead">不用一次背完所有指令。把<strong>常用指令</strong>、<strong>換向</strong>、<strong>指向</strong>、<strong>載別人專案</strong>與<strong>GitHub 協作</strong>這幾組高頻流程練熟，就足以應付絕大多數個人專案與團隊開發。</p>
+        <div class="hero-stats">
+          <div class="stat"><b>11</b><span>主題分類</span></div>
+          <div class="stat"><b>50+</b><span>高頻指令</span></div>
+          <div class="stat"><b>18</b><span>實戰組合技</span></div>
+          <div class="stat"><b>離線</b><span>單檔可開</span></div>
+        </div>
+        <p style="margin-top:18px;font-size:13px;color:var(--text-faint)">💡 點任何指令即可<strong>一鍵複製</strong>　·　左側可<strong>搜尋</strong>　·　右上可切換<strong>深色模式</strong></p>
+      </header>
+
+      <!-- ===== ★ 起手式：第一次把專案推上 GitHub ===== -->
+      <section class="block theme-start" id="kickstart">
+        <div class="section-head">
+          <div class="badge-num">🚀</div>
+          <h2>起手式：第一次把專案推上 GitHub</h2>
+          <span class="tag">最常用組合</span>
+        </div>
+        <p class="section-sub">幾乎每個人第一次都在跑這一套。<strong>先整套看過、跟著做一次就好</strong> —— 看不懂沒關係，後面每一章其實都在拆解這幾行各自在幹嘛。</p>
+
+        <div class="card spotlight">
+          <h3>📋 一套指令：從空資料夾 → GitHub</h3>
+          <p class="desc">先到 GitHub 按 <strong>New repository</strong> 開一個<strong>空</strong>倉庫（先<strong>別勾</strong> README / .gitignore），拿到網址。接著在你的專案資料夾裡，<strong>由上往下一行一行</strong>執行：</p>
+          <div class="code" data-copy>
+            <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">第一次上傳的黃金 7 步</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">init</span>                                   <span class="tok-cmt"># ① 把這個資料夾變成 Git 倉庫</span>
+<span class="tok-cmt"># ② 建立 .gitignore，先把 node_modules/、.env 等不該上傳的擋掉</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">add</span> .                                  <span class="tok-cmt"># ③ 把所有變更放進暫存區</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">commit</span> <span class="tok-flag">-m</span> <span class="tok-str">"first commit"</span>               <span class="tok-cmt"># ④ 建立第一個版本（快照）</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">branch</span> <span class="tok-flag">-M</span> main                         <span class="tok-cmt"># ⑤ 把主分支命名為 main</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">remote</span> <span class="tok-sub">add</span> origin https://github.com/你的帳號/新倉庫.git   <span class="tok-cmt"># ⑥ 接上 GitHub</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">push</span> <span class="tok-flag">-u</span> origin main                      <span class="tok-cmt"># ⑦ 第一次推上去</span></code></pre>
+          </div>
+          <div class="callout tip"><span class="ic">🔑</span><div><b>只有 2 個地方要換成你自己的：</b>第 ⑥ 行的<strong>倉庫網址</strong>，以及第 ④ 行的<strong>提交訊息</strong>。其餘原封不動照打即可。</div></div>
+        </div>
+
+        <div class="card">
+          <h3>🪜 點每一步，看它到底在做什麼</h3>
+          <p class="desc">第一次看會覺得「怎麼這麼多指令」，其實它們是一條龍：<strong>建倉庫 → 擋垃圾 → 打包 → 存檔 → 命名 → 接遠端 → 推上去</strong>。點下面任一步，看白話解釋：</p>
+          <div class="kick-steps" id="kickSteps">
+            <button class="kick-step on" data-k="init"><span class="n">1</span><code>git init</code><span class="chev">看說明 ›</span></button>
+            <button class="kick-step" data-k="ignore"><span class="n">2</span><code>建立 .gitignore</code><span class="chev">看說明 ›</span></button>
+            <button class="kick-step" data-k="add"><span class="n">3</span><code>git add .</code><span class="chev">看說明 ›</span></button>
+            <button class="kick-step" data-k="commit"><span class="n">4</span><code>git commit -m "first commit"</code><span class="chev">看說明 ›</span></button>
+            <button class="kick-step" data-k="branch"><span class="n">5</span><code>git branch -M main</code><span class="chev">看說明 ›</span></button>
+            <button class="kick-step" data-k="remote"><span class="n">6</span><code>git remote add origin …</code><span class="chev">看說明 ›</span></button>
+            <button class="kick-step" data-k="push"><span class="n">7</span><code>git push -u origin main</code><span class="chev">看說明 ›</span></button>
+          </div>
+          <div class="kick-detail" id="kickDetail"></div>
+        </div>
+
+        <div class="card">
+          <h3>🧯 第一次最容易卡住的 3 個地方</h3>
+          <p class="desc">這三個幾乎人人都中過一次。先有印象，真的遇到時就不會慌：</p>
+          <div class="acc-wrap">
+            <div class="acc">
+              <button class="acc-head"><span class="sig">🛑</span> push 被拒：remote contains work（遠端不是空的）<span class="chev">▶</span></button>
+              <div class="acc-body"><div class="acc-body-inner">
+                <p class="desc">多半是開倉庫時不小心勾了 README / .gitignore，遠端已經有東西。先把它接下來，再推：</p>
+                <div class="cmd-line"><code>git pull --rebase origin main</code><button class="mini-copy">📋</button></div>
+                <div class="cmd-line"><code>git push -u origin main</code><button class="mini-copy">📋</button></div>
+              </div></div>
+            </div>
+            <div class="acc">
+              <button class="acc-head"><span class="sig">🔐</span> 一直要我輸入帳號密碼，或說 Authentication failed<span class="chev">▶</span></button>
+              <div class="acc-body"><div class="acc-body-inner">
+                <p class="desc">GitHub 現在<strong>不能再用登入密碼</strong>推送。挑一條路：</p>
+                <div class="tbl-wrap"><table>
+                  <thead><tr><th>方式</th><th>怎麼做</th></tr></thead>
+                  <tbody>
+                    <tr><td>Personal Access Token</td><td>GitHub → Settings → Developer settings → 產生 token，要密碼時把它<strong>當密碼</strong>貼上</td></tr>
+                    <tr><td>SSH 金鑰（一勞永逸）</td><td>用 <code>ssh-keygen</code> 產生金鑰、把公鑰貼到 GitHub，遠端網址改用 <code>git@github.com:…</code></td></tr>
+                  </tbody>
+                </table></div>
+              </div></div>
+            </div>
+            <div class="acc">
+              <button class="acc-head"><span class="sig">🗑️</span> 不小心把 node_modules / .env 也 commit 進去了<span class="chev">▶</span></button>
+              <div class="acc-body"><div class="acc-body-inner">
+                <p class="desc">忘了第 ② 步。先把 <code>.gitignore</code> 補好，再把已經被追蹤的拿掉（本機檔案不會被刪）：</p>
+                <div class="cmd-line"><code>git rm -r --cached node_modules</code><button class="mini-copy">📋</button></div>
+                <div class="cmd-line"><code>git commit -m "Stop tracking node_modules"</code><button class="mini-copy">📋</button></div>
+                <div class="callout danger"><span class="ic">🔑</span><div>如果交上去的是 <code>.env</code> 之類的<strong>密鑰</strong>，光移除還不夠 —— 一定要去把那把金鑰<strong>作廢換新</strong>。詳見「組合技 → 🆘 安全事故」。</div></div>
+              </div></div>
+            </div>
+          </div>
+          <div class="callout info" style="margin-top:14px"><span class="ic">🔗</span><div>這套是<strong>最精簡</strong>版本。想看含「遠端已有 README」「搬到新倉庫」等變化題，往下跳到 <a href="#recipes" style="color:var(--git-orange);font-weight:600">組合技 · 實戰食譜 🅱️</a>。</div></div>
+        </div>
+      </section>
+
+      <!-- ===== 0. 總覽 / 核心觀念 ===== -->
+      <section class="block" id="overview">
+        <div class="section-head">
+          <div class="badge-num">0</div>
+          <h2>核心觀念：先知道自己在做什麼</h2>
+        </div>
+        <p class="section-sub">如果只記住一句話：<strong>Git 不是雲端硬碟，它是「幫你記住版本歷史」的工具。</strong></p>
+
+        <div class="card spotlight">
+          <h3>👋 完全沒碰過 Git？先花 30 秒看這個</h3>
+          <p class="desc">把 Git 想成一台幫你的專案<strong>不斷拍照存檔</strong>的相機。每完成一個段落就「拍一張」（<code>commit</code>），日後隨時能翻回任何一張舊照片。<strong>GitHub</strong> 則是把這些照片放上雲端、讓大家一起看的相簿。</p>
+          <div class="analogy-grid">
+            <div class="analogy"><span class="em">📸</span><b>commit</b><small>拍一張存檔照</small></div>
+            <div class="analogy"><span class="em">🌿</span><b>branch</b><small>另開一條平行劇情線</small></div>
+            <div class="analogy"><span class="em">☁️</span><b>push</b><small>把照片上傳雲端</small></div>
+            <div class="analogy"><span class="em">⬇️</span><b>pull</b><small>把雲端最新拿回來</small></div>
+          </div>
+          <div class="callout tip"><span class="ic">🔁</span><div><b>整個 Git 旅程，其實就是不停重複這四步：</b><br><code>改檔案</code> → <code>git add</code> → <code>git commit</code> → <code>git push</code>。看不懂後面任何指令時，回到這句話就對了。</div></div>
+        </div>
+
+        <div class="card">
+          <h3>📖 名詞速查（看到不懂的詞就回來查）</h3>
+          <p class="desc">這些詞會一直出現。不用背，先有印象，用久了自然記得。</p>
+          <div class="tbl-wrap"><table class="glossary">
+            <thead><tr><th>詞</th><th>白話解釋</th></tr></thead>
+            <tbody>
+              <tr><td>repository / repo</td><td>「倉庫」＝一個被 Git 管理的專案資料夾</td></tr>
+              <tr><td>commit</td><td>一張存檔快照，有訊息、有時間、有專屬編號</td></tr>
+              <tr><td>branch（分支）</td><td>一條平行的開發線，做新功能用，不影響主線</td></tr>
+              <tr><td>main</td><td>主分支，通常是「正式、穩定」的那條線</td></tr>
+              <tr><td>HEAD</td><td>「你現在站在哪一個版本」的箭頭</td></tr>
+              <tr><td>remote（遠端）</td><td>雲端上的倉庫，例如 GitHub 上那一份</td></tr>
+              <tr><td>origin</td><td>你的遠端的<strong>預設名字</strong>（慣例，不是魔法）</td></tr>
+              <tr><td>upstream</td><td>「原作者」的倉庫；你 Fork 別人專案時會用到</td></tr>
+              <tr><td>clone</td><td>把整個遠端倉庫<strong>複製</strong>到自己電腦</td></tr>
+              <tr><td>fork</td><td>在 GitHub 上把別人的專案<strong>複製一份到你帳號</strong></td></tr>
+              <tr><td>push / pull</td><td>把本機提交<strong>推</strong>上遠端／把遠端最新<strong>拉</strong>回本機</td></tr>
+              <tr><td>merge（合併）</td><td>把一條分支的內容接回另一條分支</td></tr>
+              <tr><td>PR（Pull Request）</td><td>在 GitHub 上發起「請幫我把這些改動合併進去」的請求</td></tr>
+              <tr><td>staged（已暫存）</td><td>已用 <code>git add</code> 挑好、準備這次提交的內容</td></tr>
+              <tr><td>.gitignore</td><td>一份「這些檔案不要被 Git 追蹤」的清單</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="card">
+          <h3>🗺️ Git 的四個核心區域</h3>
+          <p class="desc">大多數指令，本質上都是在「把內容從一個區域搬到另一個區域」。點下面任一格看它的角色：</p>
+          <div class="flow" id="flow">
+            <div class="flow-node on" data-k="wt">
+              <span class="emoji">📝</span><b>Working Tree</b><small>工作區</small>
+              <span class="arrow">→</span>
+            </div>
+            <div class="flow-node" data-k="stage">
+              <span class="emoji">📦</span><b>Staging Area</b><small>暫存區</small>
+              <span class="arrow">→</span>
+            </div>
+            <div class="flow-node" data-k="local">
+              <span class="emoji">🗄️</span><b>Local Repo</b><small>本機倉庫</small>
+              <span class="arrow">→</span>
+            </div>
+            <div class="flow-node" data-k="remote">
+              <span class="emoji">☁️</span><b>Remote Repo</b><small>遠端倉庫</small>
+            </div>
+          </div>
+          <div class="flow-detail" id="flowDetail"></div>
+        </div>
+
+        <div class="card">
+          <h3>🔁 你之後最常做的基本流程</h3>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>步驟</th><th>指令</th><th>目的</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><code>git status</code></td><td>看現在有哪些變更</td></tr>
+              <tr><td>2</td><td><code>git add &lt;file&gt;</code></td><td>把想提交的變更放進暫存區</td></tr>
+              <tr><td>3</td><td><code>git commit -m "訊息"</code></td><td>建立版本點（快照）</td></tr>
+              <tr><td>4</td><td><code>git push</code></td><td>推到遠端、和團隊同步</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="card">
+          <h3>⚠️ 新手最常誤解的地方</h3>
+          <div class="vs-grid">
+            <div class="vs-h bad">❌ 常見誤解</div>
+            <div class="vs-h good">✅ 正確理解</div>
+            <div class="vs-c l">存檔就等於 Git 記住了</div>
+            <div class="vs-c">要到 <code>commit</code> 才真的形成版本</div>
+            <div class="vs-c l"><code>add</code> 就是上傳</div>
+            <div class="vs-c"><code>add</code> 只是放進暫存區，沒上傳</div>
+            <div class="vs-c l">Git＝GitHub</div>
+            <div class="vs-c">Git 是工具；GitHub 是託管平台</div>
+            <div class="vs-c l">每次都要學很難的指令</div>
+            <div class="vs-c">先把高頻核心指令練熟最重要</div>
+          </div>
+          <div class="callout tip" style="margin-top:14px">
+            <span class="ic">🎯</span>
+            <div><b>本章重點：</b>Git 的核心不是「備份」，而是「版本管理」。先學會看狀態 → 再學提交 → 效率會高很多。</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 1. 第一次設定 ===== -->
+      <section class="block" id="setup">
+        <div class="section-head">
+          <div class="badge-num">1</div>
+          <h2>第一次設定 Git 身分</h2>
+        </div>
+        <p class="section-sub">你每次提交的作者名稱與 email，都是從這裡來的。安裝完 Git 後第一件該做的事。</p>
+
+        <div class="card">
+          <h3>⚙️ 一次設定好（可直接複製）</h3>
+          <div class="code" data-copy>
+            <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">設定全域身分</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">config</span> <span class="tok-flag">--global</span> user.name <span class="tok-str">"Your Name"</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">config</span> <span class="tok-flag">--global</span> user.email <span class="tok-str">"you@example.com"</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">config</span> <span class="tok-flag">--global</span> init.defaultBranch main
+<span class="tok-cmd">git</span> <span class="tok-sub">config</span> <span class="tok-flag">--global</span> <span class="tok-flag">--list</span></code></pre>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>設定項目</th><th>作用</th><th>建議</th></tr></thead>
+            <tbody>
+              <tr><td><code>user.name</code></td><td>顯示在提交紀錄裡的作者名稱</td><td>用真實或團隊慣用名稱</td></tr>
+              <tr><td><code>user.email</code></td><td>提交紀錄裡的作者 email</td><td>跟 GitHub 綁定信箱一致（頭像才會出現）</td></tr>
+              <tr><td><code>init.defaultBranch</code></td><td><code>git init</code> 後的預設分支名</td><td>建議直接用 <code>main</code></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="card">
+          <h3>🔍 <code>--global</code> 是什麼意思？</h3>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>層級</th><th>影響範圍</th><th>什麼時候用</th></tr></thead>
+            <tbody>
+              <tr><td><code>--global</code></td><td>你電腦上<strong>所有</strong> Git 專案</td><td>個人預設值</td></tr>
+              <tr><td>不加 <code>--global</code></td><td>只有<strong>目前這一個</strong>專案</td><td>公司專案需要不同 email 時</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout info"><span class="ic">💡</span><div>某個專案想用不同身分，就在那個專案資料夾裡執行不加 <code>--global</code> 的 <code>git config user.email "work@example.com"</code> 覆蓋即可。</div></div>
+        </div>
+      </section>
+
+      <!-- ===== 2. 常用指令 ===== -->
+      <section class="block theme-common" id="common">
+        <div class="section-head">
+          <div class="badge-num">2</div>
+          <h2>常用指令</h2>
+          <span class="tag">每天都在用</span>
+        </div>
+        <p class="section-sub">這一組是 Git 的日常主力。把它們練到反射動作，你就已經會用 Git 了。</p>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git init</span> 建立版本庫</h3>
+          <p class="desc">把一個普通資料夾變成 Git 專案。注意：<code>init</code> 只建倉庫骨架，不會自動 commit。</p>
+          <div class="cmd-line"><code>mkdir demo-repo && cd demo-repo</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git init</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git status</code><button class="mini-copy">📋</button></div>
+          <div class="callout info"><span class="ic">🆚</span><div><b>init vs clone：</b><code>init</code> 是自己建新倉庫；別人/團隊已有的專案則用 <code>git clone</code>（見「載別人」一節）。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git status</span> 看懂目前狀態</h3>
+          <p class="desc lead-quote">Git 卡住時，第一個先打的指令，幾乎都應該是 <code>git status</code>。</p>
+          <div class="cmd-line"><code>git status</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git status -s</code><button class="mini-copy">📋</button></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>狀態</th><th>意思</th><th>接下來通常做什麼</th></tr></thead>
+            <tbody>
+              <tr><td><code>untracked</code></td><td>新檔案還沒被追蹤</td><td><code>git add &lt;file&gt;</code></td></tr>
+              <tr><td><code>modified</code></td><td>已追蹤檔案被改了</td><td><code>git diff</code> 或 <code>git add</code></td></tr>
+              <tr><td><code>staged</code></td><td>已進暫存區，準備提交</td><td><code>git commit -m "..."</code></td></tr>
+              <tr><td><code>nothing to commit</code></td><td>沒有可提交變更</td><td>可切分支、push 或繼續工作</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git add</span> 加入暫存區</h3>
+          <p class="desc"><code>git add</code> 不是上傳，它是告訴 Git：「這些內容我要放進<strong>下一次</strong>提交。」</p>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>用法</th><th>適合情境</th><th>注意</th></tr></thead>
+            <tbody>
+              <tr><td><code>git add &lt;file&gt;</code></td><td>精準提交某個檔案，乾淨可控</td><td>要多打一點字</td></tr>
+              <tr><td><code>git add .</code></td><td>已確認所有變更都該提交</td><td>容易把不想交的東西一起放進去</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout warn"><span class="ic">📸</span><div><code>add</code> 加的是「<b>當下內容的快照</b>」。先 <code>add</code> 再修改，後面的修改<strong>不會</strong>自動跟進暫存區，要重新 <code>add</code>。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git commit</span> 建立提交</h3>
+          <p class="desc lead-quote">沒有提交，就沒有真正的版本歷史。<code>commit</code> 才是 Git 記錄版本的時間點。</p>
+          <div class="cmd-line"><code>git commit -m "Add login form validation"</code><button class="mini-copy">📋</button></div>
+          <p class="desc" style="margin-top:10px">提交訊息怎麼寫最好 —— 一句公式：<strong>動詞 + 對象 + 目的</strong></p>
+          <div class="vs-grid">
+            <div class="vs-h bad">❌ 不好的寫法</div>
+            <div class="vs-h good">✅ 較好的寫法</div>
+            <div class="vs-c l"><code>update</code></div><div class="vs-c"><code>Update README introduction</code></div>
+            <div class="vs-c l"><code>fix</code></div><div class="vs-c"><code>Fix login validation bug</code></div>
+            <div class="vs-c l"><code>change file</code></div><div class="vs-c"><code>Rename settings page title</code></div>
+          </div>
+          <div class="callout tip" style="margin-top:14px"><span class="ic">✨</span><div><b>最穩的提交流程：</b><code>git status</code> → <code>git diff</code> → <code>git add</code> → <code>git commit -m</code>。一次只做一件事，方便看歷史也方便回退。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git log</span> 查看歷史</h3>
+          <p class="desc">會看歷史，才算真的開始會用 Git。</p>
+          <div class="tabs" data-tabs>
+            <div class="tab-btns">
+              <button class="tab-btn active">日常用</button>
+              <button class="tab-btn">看分支圖</button>
+            </div>
+            <div class="tab-panel active">
+              <div class="cmd-line"><code>git log --oneline</code><button class="mini-copy">📋</button></div>
+              <p class="desc">用簡短一行格式看提交歷史，最適合日常快速掃描。</p>
+            </div>
+            <div class="tab-panel">
+              <div class="cmd-line"><code>git log --oneline --graph --decorate --all</code><button class="mini-copy">📋</button></div>
+              <p class="desc">用圖形化方式看<strong>所有分支</strong>怎麼分叉、怎麼合併。分支歷史一亂，這招最有幫助。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git diff</span> 比較差異</h3>
+          <p class="desc">養成「先 diff 再 commit」的習慣，能少踩很多坑（例如把除錯字串誤交上去）。</p>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>指令</th><th>比較的對象</th><th>什麼時候最有用</th></tr></thead>
+            <tbody>
+              <tr><td><code>git diff</code></td><td>工作區 vs 暫存區</td><td>剛改完，想看還沒 <code>add</code> 的內容</td></tr>
+              <tr><td><code>git diff --staged</code></td><td>暫存區 vs 最新提交</td><td>確認這次提交到底會送出什麼</td></tr>
+              <tr><td><code>git diff HEAD</code></td><td>工作區 vs 最新提交</td><td>一次看全部本地變更</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout info"><span class="ic">🔖</span><div>diff 裡 <code>-</code> 是被刪掉的內容、<code>+</code> 是新增的內容。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git restore</span> 還原修改</h3>
+          <p class="desc">「我改壞了，能不能回到上一個乾淨狀態？」—— 通常可以。</p>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>指令</th><th>影響範圍</th><th>結果</th></tr></thead>
+            <tbody>
+              <tr><td><code>git restore &lt;file&gt;</code></td><td>工作區</td><td>直接丟掉尚未提交的修改 <span class="risk mid">執行前先 diff</span></td></tr>
+              <tr><td><code>git restore --staged &lt;file&gt;</code></td><td>暫存區</td><td>把檔案拿出暫存區，但<strong>保留</strong>工作區修改 <span class="risk safe">較溫和</span></td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout danger"><span class="ic">⚠️</span><div><code>git restore &lt;file&gt;</code> 會<strong>丟掉</strong>未提交修改，且不易救回。執行前一定先 <code>git diff</code> 看清楚。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">.gitignore</span> 讓垃圾檔不要進 Git</h3>
+          <p class="desc">編譯產物、快取、密碼檔，通常都不該提交。專案一開始就建立忽略規則。</p>
+          <div class="code" data-copy>
+            <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">.gitignore</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code>node_modules/
+dist/
+.env
+.vscode/
+*.log</code></pre>
+          </div>
+          <div class="callout warn"><span class="ic">🧹</span><div><b>已經被追蹤的檔案</b>，補寫 <code>.gitignore</code> 不會自動生效，要先取消追蹤：<br>
+            <span style="display:inline-block;margin-top:6px"><code>git rm --cached .env</code>（單檔）／ <code>git rm -r --cached dist</code>（整個資料夾）</span><br>
+            <code>--cached</code> 只移除追蹤，<strong>不會刪掉</strong>你本機的檔案。</div></div>
+        </div>
+      </section>
+
+      <!-- ===== 3. 換向：切換分支 ===== -->
+      <section class="block theme-switch" id="switch">
+        <div class="section-head">
+          <div class="badge-num">3</div>
+          <h2>換向 · 切換分支</h2>
+          <span class="tag">分支操作</span>
+        </div>
+        <p class="section-sub">分支的核心價值很簡單：把不同工作切開，讓主線 <code>main</code> 保持穩定。「換向」＝在分支之間穩定地切來切去。</p>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git branch</span> · <span class="cmd-chip">git switch -c</span> 建立分支</h3>
+          <p class="desc">有新工作就先開分支，別直接在 <code>main</code> 上改。</p>
+          <div class="cmd-line"><code>git branch</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git branch --show-current</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git switch -c feature/login-page</code><button class="mini-copy">📋</button></div>
+          <p class="desc" style="margin-top:6px"><code>switch -c</code>＝建立新分支<strong>並立刻切過去</strong>，是非常高頻的日常指令。</p>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>類型</th><th>命名範例</th></tr></thead>
+            <tbody>
+              <tr><td>功能</td><td><code>feature/login-page</code></td></tr>
+              <tr><td>修 bug</td><td><code>fix/navbar-overlap</code></td></tr>
+              <tr><td>文件</td><td><code>docs/update-readme</code></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git switch</span> 在分支間切換</h3>
+          <p class="desc lead-quote">切分支前先 <code>git status</code>，這是很值得養成的習慣。乾淨的工作區會讓切換輕鬆很多。</p>
+          <div class="cmd-line"><code>git switch main</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git switch feature/login-page</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git switch -</code><button class="mini-copy">📋</button></div>
+          <p class="desc" style="margin-top:6px"><code>git switch -</code> 可以快速「切回上一個分支」。</p>
+          <div class="callout warn"><span class="ic">🤔</span><div><b>還不想提交、又要切走？</b>用 <code>git stash</code> 先收起來（見「急救」一節），或先 <code>commit</code> 再切最穩。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git merge</span> 合併分支</h3>
+          <p class="desc">功能做完後，真正把它接回主線的動作就是 <code>merge</code>。</p>
+          <div class="callout danger" style="margin-top:0"><span class="ic">📍</span><div><b>一定要記住的規則：</b>你<strong>站在哪裡</strong>，就把別人<strong>合進來</strong>。要把 <code>feature/x</code> 併入 <code>main</code>，就先切到 <code>main</code> 再 merge。</div></div>
+          <div class="code" data-copy>
+            <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">最常見的合併流程</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">switch</span> main
+<span class="tok-cmd">git</span> <span class="tok-sub">merge</span> feature/login-page
+<span class="tok-cmd">git</span> <span class="tok-sub">branch</span> <span class="tok-flag">-d</span> feature/login-page   <span class="tok-cmt"># 合併完刪掉本地分支，列表更乾淨</span></code></pre>
+          </div>
+          <div class="callout info"><span class="ic">💥</span><div><b>遇到衝突？</b>不可怕：① 打開衝突檔手動選要保留的內容 → ② <code>git add &lt;file&gt;</code> → ③ <code>git commit</code> 完成合併。詳見「急救與排錯」。</div></div>
+        </div>
+      </section>
+
+      <!-- ===== 4. 指向：版本移動 ===== -->
+      <section class="block theme-point" id="point">
+        <div class="section-head">
+          <div class="badge-num">4</div>
+          <h2>指向 · 版本移動</h2>
+          <span class="tag">HEAD / reset / revert</span>
+        </div>
+        <p class="section-sub">Git 的歷史是一串提交，<code>HEAD</code> 是「你現在站在哪一個版本」的指標。「指向」＝移動這個指標，或讓分支指向別的版本。</p>
+
+        <div class="card">
+          <h3>🧠 先搞懂 <code>HEAD</code> 與「指向」</h3>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>名詞</th><th>白話解釋</th></tr></thead>
+            <tbody>
+              <tr><td><code>HEAD</code></td><td>「我現在站在哪個提交上」的箭頭</td></tr>
+              <tr><td>分支（branch）</td><td>其實就是一個會跟著移動的「提交指標」</td></tr>
+              <tr><td>版本號（commit id）</td><td>每筆提交的身分證，用 <code>git log --oneline</code> 查得到</td></tr>
+            </tbody>
+          </table></div>
+          <div class="cmd-line"><code>git log --oneline</code><button class="mini-copy">📋</button></div>
+          <p class="desc">先用它查到你想去的版本號（前 7 碼即可），下面的指令才有目標。</p>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git switch</span> 指到指定版本</h3>
+          <p class="desc">想「回去看某個舊版本長怎樣」，或從某個舊版本「另開一條新分支」：</p>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>指令</th><th>用途</th></tr></thead>
+            <tbody>
+              <tr><td><code>git switch --detach &lt;版本號&gt;</code></td><td>把 HEAD 暫時指到某個舊版本（進入 detached 狀態，只看不改）</td></tr>
+              <tr><td><code>git switch -c &lt;分支名&gt; &lt;版本號&gt;</code></td><td>從指定版本<strong>出發</strong>建立新分支並切過去（保留工作最安全）</td></tr>
+            </tbody>
+          </table></div>
+          <div class="cmd-line"><code>git switch --detach 3f6181b</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git switch -c fix/from-old 3f6181b</code><button class="mini-copy">📋</button></div>
+          <div class="callout warn"><span class="ic">🧭</span><div><b>Detached HEAD（分離頭指標）</b>：你不在正式分支上，只是停在某個提交。看完想回去就 <code>git switch main</code>；如果在這裡做了想保留的修改，立刻 <code>git switch -c rescue/xxx</code> 開新分支接住它。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git reset</span> 把指標往回拉（未 push）</h3>
+          <p class="desc">把分支指標往回移，撤銷 <code>add</code> 或 <code>commit</code>。三種模式差在「動到哪幾層」：</p>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>指令</th><th>commit</th><th>暫存區</th><th>工作區</th><th>白話</th></tr></thead>
+            <tbody>
+              <tr><td><code>git reset --soft HEAD~1</code></td><td>退回</td><td>保留 staged</td><td>不動</td><td>「這筆 commit 想重做，內容我還要」 <span class="risk safe">低</span></td></tr>
+              <tr><td><code>git reset HEAD~1</code></td><td>退回</td><td>重設</td><td>修改留著</td><td>「拆掉重整，內容放回工作區」 <span class="risk mid">中</span></td></tr>
+              <tr><td><code>git reset --hard HEAD~1</code></td><td>退回</td><td>清掉</td><td>一起退</td><td>「這整段都不要了」 <span class="risk high">高</span></td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout danger"><span class="ic">🔥</span><div><code>--hard</code> 會把本機修改一起清掉，且難救回。只要你<strong>還想保留內容</strong>，就先不要碰 <code>--hard</code>。退錯了第一時間看 <code>git reflog</code>。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git revert</span> 安全撤銷（已 push 首選）</h3>
+          <p class="desc lead-quote">新手最需要的不是最猛的破壞性指令，而是最安全的回退方式。</p>
+          <div class="cmd-line"><code>git revert &lt;commit&gt;</code><button class="mini-copy">📋</button></div>
+          <p class="desc" style="margin-top:6px"><code>revert</code> 不刪歷史，而是<strong>新增一筆「反向提交」</strong>把舊提交抵消掉，因此在已分享/共享分支上最穩。</p>
+          <div class="callout info"><span class="ic">⚖️</span><div><b>reset vs revert：</b><code>reset</code> 會改寫歷史（適合<strong>還沒 push</strong>）；<code>revert</code> 不改歷史（適合<strong>已經 push</strong>）。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git reflog</span> 救援地圖</h3>
+          <p class="desc">記錄「你的 HEAD 最近<strong>去過哪裡</strong>」—— 連 reset、switch、amend 之後找不到的位置都常能找回來。</p>
+          <div class="cmd-line"><code>git reflog</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git reset --hard HEAD@{1}</code><button class="mini-copy">📋</button></div>
+          <div class="callout tip"><span class="ic">🛟</span><div>剛剛 <code>reset</code> 過頭、馬上後悔 → 先 <code>git reflog</code> 看 HEAD 軌跡，找到剛剛那個位置再 <code>git reset --hard HEAD@{1}</code> 切回去。先別判定「完了」。</div></div>
+        </div>
+      </section>
+
+      <!-- ===== 5. 載別人 ===== -->
+      <section class="block theme-clone" id="clone">
+        <div class="section-head">
+          <div class="badge-num">5</div>
+          <h2>載別人 · 取得專案</h2>
+          <span class="tag">clone / fetch / pull</span>
+        </div>
+        <p class="section-sub">如果專案已經存在於遠端（GitHub 等），通常不是 <code>init</code>，而是直接「載下來」。</p>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git clone</span> 複製整個專案</h3>
+          <p class="desc">把遠端專案<strong>完整複製</strong>到本機（含所有歷史）。這是拿到別人專案最常見的第一步。</p>
+          <div class="code" data-copy>
+            <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">clone 別人的專案</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">clone</span> https://github.com/example/project.git
+<span class="tok-cmd">cd</span> project
+<span class="tok-cmd">git</span> <span class="tok-sub">remote</span> <span class="tok-flag">-v</span>   <span class="tok-cmt"># 看遠端連到哪</span></code></pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git remote</span> 管理遠端連線</h3>
+          <p class="desc">如果你是<strong>本地先做</strong>、現在才要接上遠端：</p>
+          <div class="cmd-line"><code>git remote add origin https://github.com/example/project.git</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git remote -v</code><button class="mini-copy">📋</button></div>
+          <div class="callout info"><span class="ic">🏷️</span><div><code>origin</code> 只是遠端倉庫的<strong>預設慣例名稱</strong>，不是特殊魔法。幾乎所有教學都這樣叫。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git fetch</span> · <span class="cmd-chip">git pull</span> 拉回最新</h3>
+          <p class="desc">協作時，不只要會推，也要會穩定地把別人的更新拉回來。</p>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>指令</th><th>做了什麼</th><th>適合情境</th></tr></thead>
+            <tbody>
+              <tr><td><code>git fetch origin</code></td><td>只更新遠端資訊，<strong>不</strong>改你目前工作內容</td><td>你想先觀察 <span class="risk safe">保守</span></td></tr>
+              <tr><td><code>git pull --rebase origin main</code></td><td>抓下來，並把你的本地提交接到最新遠端<strong>之後</strong></td><td>你準備正式同步</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout tip"><span class="ic">✨</span><div><b>為什麼很多人愛 <code>pull --rebase</code>：</b>歷史較乾淨，不會多出一堆不必要的 merge commit；先把遠端最新接上，再放回你的提交。同步前先確認工作區乾淨，會少很多麻煩。</div></div>
+        </div>
+      </section>
+
+      <!-- ===== 6. 跟別人合作 GitHub ===== -->
+      <section class="block theme-collab" id="collab">
+        <div class="section-head">
+          <div class="badge-num">6</div>
+          <h2>跟別人合作 GitHub</h2>
+          <span class="tag">push / pull / 協作流程</span>
+        </div>
+        <p class="section-sub">你本機 <code>commit</code> 完，團隊還看不到；要 <code>push</code> 才會同步到遠端。這一節把「和別人一起開發」串成完整流程。</p>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git push</span> 把版本推上遠端</h3>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>場景</th><th>指令</th></tr></thead>
+            <tbody>
+              <tr><td>第一次推主分支</td><td><code>git push -u origin main</code></td></tr>
+              <tr><td>新功能分支第一次上傳</td><td><code>git push -u origin feature/login-page</code></td></tr>
+              <tr><td>同一分支後續更新</td><td><code>git push</code></td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout info"><span class="ic">🔗</span><div><code>-u</code>（＝<code>--set-upstream</code>）設定 upstream：之後這個本地分支就知道自己對應哪個遠端分支，日常多半只要打 <code>git push</code>。</div></div>
+        </div>
+
+        <div class="card">
+          <h3>🔄 標準協作流程（最重要）</h3>
+          <p class="desc">和別人共用一個 repo 時，一個功能從頭到尾的節奏：</p>
+          <div class="steps">
+            <div class="step"><b>同步主線</b><div class="cmd-line"><code>git switch main && git pull --rebase origin main</code><button class="mini-copy">📋</button></div></div>
+            <div class="step"><b>開新分支做事</b><div class="cmd-line"><code>git switch -c feature/navbar-redesign</code><button class="mini-copy">📋</button></div></div>
+            <div class="step"><b>提交並推上遠端</b><div class="cmd-line"><code>git add . && git commit -m "Redesign navbar" && git push -u origin feature/navbar-redesign</code><button class="mini-copy">📋</button></div></div>
+            <div class="step"><b>在 GitHub 開 Pull Request，請人 review、合併</b><span class="desc" style="display:block;margin-top:4px">團隊協作通常透過 PR 合併，而不是自己直接 push 到 <code>main</code>。</span></div>
+            <div class="step"><b>合併後回本機同步、刪分支</b><div class="cmd-line"><code>git switch main && git pull --rebase origin main && git branch -d feature/navbar-redesign</code><button class="mini-copy">📋</button></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🚧 協作時最常撞到的兩個狀況</h3>
+          <div class="acc-wrap">
+            <div class="acc">
+              <button class="acc-head"><span class="sig">🛑</span> <code>git push</code> 被拒：remote contains work…（遠端比你新）<span class="chev">▶</span></button>
+              <div class="acc-body"><div class="acc-body-inner">
+                <p class="desc">遠端已經有比你更新的內容，不能直接硬推蓋掉。先把別人的更新拉下來，再推：</p>
+                <div class="code" data-copy>
+                  <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">先拉再推</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">fetch</span> origin
+<span class="tok-cmd">git</span> <span class="tok-sub">pull</span> <span class="tok-flag">--rebase</span> origin main
+<span class="tok-cmd">git</span> <span class="tok-sub">push</span></code></pre>
+                </div>
+              </div></div>
+            </div>
+            <div class="acc">
+              <button class="acc-head"><span class="sig">💥</span> 合併 / rebase 時發生衝突（CONFLICT）<span class="chev">▶</span></button>
+              <div class="acc-body"><div class="acc-body-inner">
+                <p class="desc">同一段內容被不同人改成不同版本，Git 不敢替你決定。打開衝突檔，你會看到：</p>
+                <div class="code">
+                  <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">衝突標記</span></div>
+<pre class="code-body"><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+你的版本
+=======
+對方版本
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/x</code></pre>
+                </div>
+                <p class="desc">手動改成最終內容、刪掉 <code>&lt;&lt;&lt;</code> <code>===</code> <code>&gt;&gt;&gt;</code> 標記，存檔後告訴 Git 處理完了：</p>
+                <div class="cmd-line"><code>git add app.js</code><button class="mini-copy">📋</button></div>
+                <div class="cmd-line"><code>git commit          # 一般 merge</code><button class="mini-copy">📋</button></div>
+                <div class="cmd-line"><code>git rebase --continue   # 若是 pull --rebase</code><button class="mini-copy">📋</button></div>
+                <div class="callout tip"><span class="ic">🧩</span><div>衝突<strong>不是叫你二選一</strong>。很多時候正確答案是把兩邊重新整理成第三種版本。</div></div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🛡️ 改到別人也在用的歷史時：請手下留情</h3>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>分支類型</th><th>安全原則</th></tr></thead>
+            <tbody>
+              <tr><td>你自己的功能分支</td><td>可考慮改歷史，但仍要小心；強推用 <code>git push --force-with-lease</code>（比 <code>--force</code> 安全）</td></tr>
+              <tr><td>團隊共用的 <code>main</code>／共享分支</td><td>優先用 <code>git revert</code>，<strong>不要</strong>直接重寫歷史或 force push</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout danger"><span class="ic">⛔</span><div>看到 <code>push --force</code> 先停一下，問自己：這是不是共享分支？幾乎所有共享分支都不該 force push。</div></div>
+        </div>
+      </section>
+
+      <!-- ===== 7. 組合技 / 實戰食譜 ===== -->
+      <section class="block theme-recipe" id="recipes">
+        <div class="section-head">
+          <div class="badge-num">7</div>
+          <h2>組合技 · 實戰食譜</h2>
+          <span class="tag">照著做就會</span>
+        </div>
+        <p class="section-sub">單一指令學會後，真正的工作其實是「<strong>好幾個指令串起來</strong>」。這一節把最常見的實戰情境整理成食譜 —— 跟著步驟做就好。</p>
+
+        <!-- 食譜 A：把別人的作品弄下來 -->
+        <div class="card">
+          <span class="recipe-pill a">🅰️ 把別人的作品弄下來</span>
+          <h3 style="margin-top:8px">git 別人的 GitHub 專案</h3>
+          <p class="desc">「我想用 / 研究 / 參與別人的專案」—— 依你的目的選一種：</p>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">⬇️</span> A1 · 只是想下載來用或研究<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">最單純：把整個專案連同歷史複製到本機。</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">clone 下來</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">clone</span> https://github.com/某人/專案.git
+<span class="tok-cmd">cd</span> 專案</code></pre>
+              </div>
+              <div class="callout info"><span class="ic">⚡</span><div>專案很大、只想看最新版？加 <code>--depth 1</code> 只抓最近一筆，下載快很多：<code>git clone --depth 1 &lt;url&gt;</code></div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🧱</span> A2 · 把別人的專案當「範本」，開始我自己的全新版本<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">你想用別人的程式碼當<strong>起點</strong>，但<strong>不要</strong>他的版本歷史，要從你自己的第一筆 commit 開始：</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">下載 → 清掉舊歷史 → 重新開始</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">clone</span> https://github.com/某人/template.git my-project
+<span class="tok-cmd">cd</span> my-project
+<span class="tok-cmd">rm</span> <span class="tok-flag">-rf</span> .git              <span class="tok-cmt"># 移除原作者的版本歷史</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">init</span>                  <span class="tok-cmt"># 重新開一份屬於你的歷史</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">add</span> .
+<span class="tok-cmd">git</span> <span class="tok-sub">commit</span> <span class="tok-flag">-m</span> <span class="tok-str">"Initial commit from template"</span></code></pre>
+              </div>
+              <div class="callout warn"><span class="ic">🪟</span><div>Windows PowerShell 沒有 <code>rm -rf</code>，改用 <code>Remove-Item -Recurse -Force .git</code>（Git Bash 則可直接用 <code>rm -rf</code>）。</div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🙌</span> A3 · 想「貢獻」別人的專案（Fork → 改 → PR 完整流程）<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">要把修改交回給原作者，標準做法是「Fork」。</p>
+              <div class="steps">
+                <div class="step"><b>在 GitHub 網站點 <span class="risk safe">Fork</span></b><span class="desc" style="display:block">把專案複製一份到<strong>你自己的帳號</strong>底下。</span></div>
+                <div class="step"><b>clone 你自己的 fork（不是原作者的）</b><div class="cmd-line"><code>git clone https://github.com/你的帳號/專案.git && cd 專案</code><button class="mini-copy">📋</button></div></div>
+                <div class="step"><b>把原作者倉庫設成 upstream</b><span class="desc" style="display:block">之後才好把原作者的更新同步回來。</span><div class="cmd-line"><code>git remote add upstream https://github.com/原作者/專案.git</code><button class="mini-copy">📋</button></div></div>
+                <div class="step"><b>開分支、改東西、提交</b><div class="cmd-line"><code>git switch -c fix/typo && git add . && git commit -m "Fix typo in README"</code><button class="mini-copy">📋</button></div></div>
+                <div class="step"><b>推到你的 fork</b><div class="cmd-line"><code>git push -u origin fix/typo</code><button class="mini-copy">📋</button></div></div>
+                <div class="step"><b>回 GitHub 點「Compare &amp; pull request」</b><span class="desc" style="display:block">向原作者發 PR，等他 review、合併。</span></div>
+              </div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🔄</span> A4 · 讓我的 Fork 跟上原作者的最新進度<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">原作者後來又更新了，你想把那些更新同步進自己的 fork（需先做過 A3 設定 upstream）：</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">同步原作者更新</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">fetch</span> upstream
+<span class="tok-cmd">git</span> <span class="tok-sub">switch</span> main
+<span class="tok-cmd">git</span> <span class="tok-sub">merge</span> upstream/main   <span class="tok-cmt"># 把原作者的 main 併進來</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">push</span>                   <span class="tok-cmt"># 把同步後的結果推回你的 fork</span></code></pre>
+              </div>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- 食譜 B：把自己的作品推到（新）倉庫 -->
+        <div class="card">
+          <span class="recipe-pill b">🅱️ 把自己的作品推到倉庫</span>
+          <h3 style="margin-top:8px">把現在的作品 git 上去 / 搬到新倉庫</h3>
+          <p class="desc">本機已經有一個專案，想讓它「上雲端」或「換一個新家」：</p>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🚀</span> B1 · 本機專案<strong>第一次</strong>上傳到全新 GitHub 倉庫<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <div class="steps">
+                <div class="step"><b>先在 GitHub 建一個「空的」新倉庫</b><span class="desc" style="display:block"><strong>先別勾</strong> README / .gitignore，免得和你本機內容衝突。</span></div>
+                <div class="step"><b>本機初始化並提交</b><div class="cmd-line"><code>git init && git add . && git commit -m "Initial commit"</code><button class="mini-copy">📋</button></div></div>
+                <div class="step"><b>接上遠端並推上去</b>
+                  <div class="code" data-copy>
+                    <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">接遠端 + 首推</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">branch</span> <span class="tok-flag">-M</span> main                          <span class="tok-cmt"># 主分支命名為 main</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">remote</span> <span class="tok-sub">add</span> origin https://github.com/你的帳號/新倉庫.git
+<span class="tok-cmd">git</span> <span class="tok-sub">push</span> <span class="tok-flag">-u</span> origin main</code></pre>
+                  </div>
+                </div>
+              </div>
+              <div class="callout warn"><span class="ic">🛑</span><div>如果 push 被擋（遠端已有 README）：先 <code>git pull --rebase origin main</code> 把它接下來，再 <code>git push</code>。</div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">📦</span> B2 · 把現有專案<strong>搬到另一個新倉庫</strong>（換遠端網址）<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">專案原本連著舊倉庫，現在想改推到一個新倉庫。先看目前連到哪：</p>
+              <div class="cmd-line"><code>git remote -v</code><button class="mini-copy">📋</button></div>
+              <p class="desc">直接把 <code>origin</code> 改指向新網址，再推：</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">換掉 origin 指向</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">remote</span> set-url origin https://github.com/你的帳號/新倉庫.git
+<span class="tok-cmd">git</span> <span class="tok-sub">remote</span> <span class="tok-flag">-v</span>                    <span class="tok-cmt"># 確認改成功</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">push</span> <span class="tok-flag">-u</span> origin main</code></pre>
+              </div>
+              <div class="callout info"><span class="ic">💡</span><div>想<strong>同時保留</strong>舊倉庫、另外加一個新的，就用 <code>git remote add new &lt;新網址&gt;</code>，再 <code>git push new main</code>。</div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🚚</span> B3 · 完整搬家：把<strong>所有分支與標籤</strong>原封不動搬過去<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">不只搬 main，而是整個倉庫（所有分支、所有 tag）一字不漏搬到新倉庫。用 <code>--mirror</code> 最乾淨：</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">整庫鏡像搬移</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">clone</span> <span class="tok-flag">--bare</span> https://github.com/舊/專案.git
+<span class="tok-cmd">cd</span> 專案.git
+<span class="tok-cmd">git</span> <span class="tok-sub">push</span> <span class="tok-flag">--mirror</span> https://github.com/新/專案.git</code></pre>
+              </div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">👯</span> B4 · 同一份程式碼，同時推到<strong>兩個遠端</strong>（例如做備份）<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">多加一個遠端</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">remote</span> <span class="tok-sub">add</span> backup https://github.com/你的帳號/備份倉庫.git
+<span class="tok-cmd">git</span> <span class="tok-sub">push</span> backup main</code></pre>
+              </div>
+              <p class="desc">之後 <code>git push</code> 推 origin、<code>git push backup</code> 推備份，各推各的。</p>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- 食譜 D：日常開發最常見的組合 -->
+        <div class="card">
+          <span class="recipe-pill d">🛠️ 日常開發常見組合</span>
+          <h3 style="margin-top:8px">寫程式時三天兩頭會用到的串接</h3>
+          <p class="desc">這些不是「出事了」才用，而是<strong>正常開發的日常節奏</strong>。挑你現在遇到的展開來看：</p>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🌿</span> D1 · 改到一半才發現「忘了開分支，直接在 main 上改」<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc"><b>情況一：還沒 commit</b> —— 最簡單，直接帶著修改開新分支：</p>
+              <div class="cmd-line"><code>git switch -c feature/right-branch</code><button class="mini-copy">📋</button></div>
+              <p class="desc">未提交的修改會<strong>跟著你</strong>到新分支，原地繼續做即可，<code>main</code> 完全沒被動到。</p>
+              <p class="desc" style="margin-top:12px"><b>情況二：已經 commit 在 main 上（還沒 push）</b> —— 先用新分支接住，再把 main 退回乾淨：</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">把 commit 搬到正確分支</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">switch</span> <span class="tok-flag">-c</span> feature/right-branch   <span class="tok-cmt"># 新分支接住剛剛的 commit</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">switch</span> main
+<span class="tok-cmd">git</span> <span class="tok-sub">reset</span> <span class="tok-flag">--hard</span> origin/main          <span class="tok-cmt"># 把 main 拉回和遠端一樣</span></code></pre>
+              </div>
+              <div class="callout warn"><span class="ic">⚠️</span><div><code>reset --hard</code> 會丟掉 main 上多出來的提交 —— 但它們<strong>已經安全待在新分支</strong>了才這樣做。退錯了第一時間 <code>git reflog</code> 找回來。</div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🚒</span> D2 · 做到一半臨時要救火：先收起來 → 改別的 → 再回來<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">半成品還不想 commit，但要你<strong>馬上</strong>修個急 bug：</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">stash 救火流程</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">stash</span> <span class="tok-flag">-u</span>            <span class="tok-cmt"># 連未追蹤的新檔一起收起來</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">switch</span> main        <span class="tok-cmt"># 切去處理急事…改完、commit、push</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">switch</span> -           <span class="tok-cmt"># 切回剛剛那個分支</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">stash</span> pop          <span class="tok-cmt"># 把半成品拿回來繼續做</span></code></pre>
+              </div>
+              <div class="callout info"><span class="ic">📌</span><div><code>git stash list</code> 可看收了哪些；<code>pop</code> 若遇衝突，stash 有時<strong>不會</strong>自動刪掉，記得再確認一次。</div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">✂️</span> D3 · 一個檔案改了很多，只想先提交「其中一部分」<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">同一個檔案裡，有些改動想這次交、有些想留到下次。用 <code>-p</code> 一段一段挑：</p>
+              <div class="cmd-line"><code>git add -p</code><button class="mini-copy">📋</button></div>
+              <p class="desc">Git 會一塊一塊問你要不要加，常用回應：<code>y</code> 要、<code>n</code> 不要、<code>s</code> 拆更細、<code>q</code> 結束。挑完照常提交：</p>
+              <div class="cmd-line"><code>git commit -m "Add only the validation part"</code><button class="mini-copy">📋</button></div>
+              <div class="callout tip"><span class="ic">🎯</span><div>養成「一個 commit 只做一件事」的習慣，日後看歷史、回退都會輕鬆非常多。</div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🍒</span> D4 · 只想把別的分支上「某一個 commit」搬過來<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">不想整條分支合併，只要那一筆修正 —— 用 <code>cherry-pick</code>：</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">撿單一 commit</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">log</span> <span class="tok-flag">--oneline</span> other-branch   <span class="tok-cmt"># 找到要的那筆 commit id</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">switch</span> main
+<span class="tok-cmd">git</span> <span class="tok-sub">cherry-pick</span> a1b2c3d            <span class="tok-cmt"># 只把那一筆套到目前分支</span></code></pre>
+              </div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🏷️</span> D5 · 發佈一個版本號（打 tag 並推上去）<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">功能告一段落，想標記「這就是 v1.0.0」：</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">打標籤 + 推標籤</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">tag</span> <span class="tok-flag">-a</span> v1.0.0 <span class="tok-flag">-m</span> <span class="tok-str">"First release"</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">push</span> origin v1.0.0        <span class="tok-cmt"># 單獨推這個 tag</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">push</span> origin <span class="tok-flag">--tags</span>        <span class="tok-cmt"># 或一次推全部 tag</span></code></pre>
+              </div>
+              <div class="callout info"><span class="ic">💡</span><div><code>git push</code> 預設<strong>不會</strong>把 tag 一起推，tag 要像上面這樣自己單獨推。</div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">⏮️</span> D6 · 把某個檔案還原成「之前某個版本」的樣子<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">只想讓<strong>單一檔案</strong>回到某個歷史版本，其他檔案都不動：</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">還原單一檔案到舊版本</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">log</span> <span class="tok-flag">--oneline</span> <span class="tok-flag">--</span> src/app.js          <span class="tok-cmt"># 找到那個版本的 id</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">restore</span> <span class="tok-flag">--source</span> a1b2c3d <span class="tok-flag">--</span> src/app.js</code></pre>
+              </div>
+              <div class="callout info"><span class="ic">🔎</span><div>還原後檔案會變成舊版內容、留在工作區，確認沒問題再 <code>git add</code> + <code>git commit</code> 即可。</div></div>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- 食譜 C：不小心 push 金鑰 -->
+        <div class="card">
+          <span class="recipe-pill c">🆘 安全事故</span>
+          <h3 style="margin-top:8px">不小心把金鑰 / 密碼 push 上去了</h3>
+          <div class="callout danger" style="margin-top:6px">
+            <span class="ic">🚨</span>
+            <div><b>第一件事，不是刪檔，是「作廢金鑰」。</b><br>
+            GitHub 上的密鑰，往往<strong>幾秒內</strong>就被掃描機器人撈走；而且任何已經 clone / fork 的人手上都還有那份。所以唯一真正有效的補救是：<strong>立刻把那把金鑰／密碼作廢、重新產生一把新的（rotate）</strong>。下面的清歷史只是收尾，不能取代這一步。</div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">①</span> C1 · 金鑰只在<strong>最近一次</strong>提交 → 移除並停止追蹤<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">移除 + 加入 .gitignore + 重新提交</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">rm</span> <span class="tok-flag">--cached</span> .env                 <span class="tok-cmt"># 停止追蹤，本機檔案保留</span>
+<span class="tok-cmd">echo</span> <span class="tok-str">".env"</span> &gt;&gt; .gitignore             <span class="tok-cmt"># 以後不再追蹤它</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">commit</span> <span class="tok-flag">-m</span> <span class="tok-str">"Remove leaked secret, ignore .env"</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">push</span></code></pre>
+              </div>
+              <div class="callout warn"><span class="ic">⚠️</span><div>這只移除「<strong>最新版本</strong>」。<strong>舊的提交歷史裡那把金鑰還看得到</strong> —— 所以仍要做 C2 清歷史，並且務必已經作廢金鑰。</div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">②</span> C2 · 金鑰<strong>散在多筆歷史</strong> → 從整個歷史徹底清掉<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc">官方推薦 <code>git filter-repo</code>（需另外安裝），把某個檔案從<strong>所有歷史</strong>抹掉：</p>
+              <div class="cmd-line"><code>git filter-repo --invert-paths --path .env</code><button class="mini-copy">📋</button></div>
+              <p class="desc">或用 BFG Repo-Cleaner：</p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">BFG 清檔 + 收尾</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">bfg</span> <span class="tok-flag">--delete-files</span> .env
+<span class="tok-cmd">git</span> <span class="tok-sub">reflog</span> expire <span class="tok-flag">--expire=now</span> <span class="tok-flag">--all</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">gc</span> <span class="tok-flag">--prune=now</span> <span class="tok-flag">--aggressive</span></code></pre>
+              </div>
+              <p class="desc">歷史已被改寫，需要強推，並<strong>通知所有協作者重新 clone</strong>：</p>
+              <div class="cmd-line"><code>git push --force --all && git push --force --tags</code><button class="mini-copy">📋</button></div>
+              <div class="callout danger"><span class="ic">🔁</span><div>再強調一次：清完歷史<strong>不代表安全</strong>。已外洩的金鑰一定要作廢換新，否則別人手上的舊副本仍然有效。</div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🛡️</span> C3 · 預防（最划算，下次別再中）<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <div class="tbl-wrap"><table>
+                <thead><tr><th>做法</th><th>說明</th></tr></thead>
+                <tbody>
+                  <tr><td>一開始就寫好 <code>.gitignore</code></td><td>把 <code>.env</code>、<code>*.key</code>、<code>id_rsa</code>、憑證檔先擋掉</td></tr>
+                  <tr><td>密鑰放<strong>環境變數</strong></td><td>不要把金鑰寫死在程式碼裡</td></tr>
+                  <tr><td>開啟 GitHub Secret scanning / Push protection</td><td>推之前就幫你攔下疑似密鑰</td></tr>
+                  <tr><td>提交前 <code>git diff --staged</code></td><td>養成習慣，提交前看一眼到底交了什麼</td></tr>
+                </tbody>
+              </table></div>
+            </div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 8. 急救與排錯 ===== -->
+      <section class="block theme-rescue" id="rescue">
+        <div class="section-head">
+          <div class="badge-num">8</div>
+          <h2>急救與排錯</h2>
+          <span class="tag">手滑補救</span>
+        </div>
+        <p class="section-sub">真正常見的不是你不會 Git，而是你手太快。先判斷錯在哪一層，再選最安全的補救方式。</p>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git stash</span> 暫時收起未完成工作</h3>
+          <p class="desc">做到一半突然要切去修別的東西，又不想為半成品硬 commit —— <code>stash</code> 超好用。</p>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>指令</th><th>用途</th></tr></thead>
+            <tbody>
+              <tr><td><code>git stash</code></td><td>暫時收起目前修改</td></tr>
+              <tr><td><code>git stash -u</code></td><td>連<strong>未追蹤</strong>的新檔案一起收起來</td></tr>
+              <tr><td><code>git stash list</code></td><td>看有哪些 stash 紀錄</td></tr>
+              <tr><td><code>git stash pop</code></td><td>把最近一筆 stash 套回來並移除</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout info"><span class="ic">📌</span><div><code>stash pop</code> 若發生衝突，stash 有時<strong>不會</strong>被刪掉。別以為它一定消失了，再 <code>git stash list</code> 確認一下。</div></div>
+        </div>
+
+        <div class="card">
+          <h3><span class="cmd-chip">git commit --amend</span> 修正最近一次提交</h3>
+          <p class="desc">不是要回退整個歷史，只是上一筆 commit 少放了檔案、或訊息打錯。</p>
+          <div class="cmd-line"><code>git add forgotten-file.txt && git commit --amend --no-edit</code><button class="mini-copy">📋</button></div>
+          <div class="cmd-line"><code>git commit --amend -m "Correct commit message"</code><button class="mini-copy">📋</button></div>
+          <div class="callout warn"><span class="ic">⚠️</span><div><code>amend</code> 本質上是<strong>重做上一筆</strong>。<strong>還沒 push 最安全</strong>；已經 push 且團隊可能拉走的歷史，先別隨便 amend。</div></div>
+        </div>
+
+        <div class="card">
+          <h3>🚑 25 個最常見「手滑」情境（點開展開）</h3>
+          <p class="desc">先判斷：你卡在<strong>檔案、暫存區、commit、還是遠端</strong>？再對症下藥。</p>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">📄</span> A. 檔案內容救回<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc"><b>改壞 / 誤刪單一檔案，想回到目前 commit 版本：</b></p>
+              <div class="cmd-line"><code>git restore main.c</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b>整個工作區改亂，全部恢復：</b></p>
+              <div class="cmd-line"><code>git restore .</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b>只想救某個資料夾：</b></p>
+              <div class="cmd-line"><code>git restore src/</code><button class="mini-copy">📋</button></div>
+              <div class="callout warn"><span class="ic">🚫</span><div>本地刪檔想救回時，<strong>先別用 <code>git pull</code></strong>。遠端若沒有新 commit，pull 不會幫你補回本地刪掉的檔案，用 <code>git restore</code> 才對。</div></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">📦</span> B. <code>git add</code> 加錯（取消 staged）<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc"><b>單檔 add 錯，取消 staged（保留修改）：</b></p>
+              <div class="cmd-line"><code>git restore --staged secret.txt</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b><code>git add .</code> 加太多，全部取消 staged：</b></p>
+              <div class="cmd-line"><code>git restore --staged .</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b>連工作區修改也不要：</b></p>
+              <div class="cmd-line"><code>git restore --staged config.yml && git restore config.yml</code><button class="mini-copy">📋</button></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">📝</span> C. commit 錯了，但<strong>還沒 push</strong><span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc"><b>訊息寫錯：</b></p>
+              <div class="cmd-line"><code>git commit --amend -m "Correct commit message"</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b>少加一個檔案：</b></p>
+              <div class="cmd-line"><code>git add missing-file.txt && git commit --amend --no-edit</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b>撤銷最後一次 commit，但<strong>保留</strong>修改在工作區：</b></p>
+              <div class="cmd-line"><code>git reset HEAD~1</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b>撤銷最後一次 commit，連修改都不要：</b> <span class="risk high">高風險</span></p>
+              <div class="cmd-line"><code>git reset --hard HEAD~1</code><button class="mini-copy">📋</button></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">☁️</span> D. commit <strong>已經 push</strong> 出去了<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc"><b>安全撤銷（共享分支首選，不改歷史）：</b></p>
+              <div class="cmd-line"><code>git revert HEAD</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b>撤銷某個舊 commit：</b></p>
+              <div class="cmd-line"><code>git revert &lt;commit_id&gt;</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b>確定是<strong>自己的私人分支</strong>、可改遠端歷史：</b> <span class="risk high">高風險</span></p>
+              <div class="cmd-line"><code>git reset --hard HEAD~1 && git push --force-with-lease</code><button class="mini-copy">📋</button></div>
+            </div></div>
+          </div>
+
+          <div class="acc">
+            <button class="acc-head"><span class="sig">🔄</span> E. 遠端同步與急救<span class="chev">▶</span></button>
+            <div class="acc-body"><div class="acc-body-inner">
+              <p class="desc"><b>只是想抓遠端最新：</b></p>
+              <div class="cmd-line"><code>git pull</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b>push 被拒（遠端比你新）：</b></p>
+              <div class="cmd-line"><code>git pull --rebase && git push</code><button class="mini-copy">📋</button></div>
+              <p class="desc"><b>讓本機<strong>完全變成</strong> GitHub 那版：</b> <span class="risk high">高風險</span></p>
+              <div class="code" data-copy>
+                <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">先試跑 clean -nd 再真刪</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmd">git</span> <span class="tok-sub">fetch</span> origin
+<span class="tok-cmd">git</span> <span class="tok-sub">reset</span> <span class="tok-flag">--hard</span> origin/main
+<span class="tok-cmd">git</span> <span class="tok-sub">clean</span> <span class="tok-flag">-nd</span>   <span class="tok-cmt"># 只列出會刪什麼，不真刪</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">clean</span> <span class="tok-flag">-fd</span>   <span class="tok-cmt"># 確認後才真的刪未追蹤檔</span></code></pre>
+              </div>
+              <p class="desc"><b>剛剛 reset 過頭，想找回位置：</b></p>
+              <div class="cmd-line"><code>git reflog</code><button class="mini-copy">📋</button></div>
+              <div class="cmd-line"><code>git reset --hard HEAD@{1}</code><button class="mini-copy">📋</button></div>
+            </div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🚦 危險操作前：固定先問 4 個問題</h3>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>#</th><th>先問自己</th><th>影響</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>要取消的是<strong>哪一層</strong>？（工作區／暫存區／commit／遠端）</td><td>決定用哪個指令</td></tr>
+              <tr><td>2</td><td>那筆提交<strong>有沒有 push</strong> 過？</td><td>沒 push 可較自由整理；已 push 要小心</td></tr>
+              <tr><td>3</td><td>這是<strong>共享分支</strong>嗎？</td><td>共享分支優先 <code>revert</code></td></tr>
+              <tr><td>4</td><td>現在有沒有<strong>未提交修改</strong>？</td><td>先別把自己的東西弄丟</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout tip"><span class="ic">🦺</span><div><b>怕退錯就先做保險：</b>① 開備份分支 <code>git branch backup/before-recovery</code>　② 先收修改 <code>git stash -u</code>　③ 刪未追蹤檔前先試跑 <code>git clean -nd</code>。</div></div>
+        </div>
+
+        <div class="card">
+          <h3>🧯 卡住情境快速判斷</h3>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>你看到的情況</th><th>常見原因</th><th>優先做法</th></tr></thead>
+            <tbody>
+              <tr><td>切 branch 被擋</td><td>本機有未提交修改</td><td><code>commit</code> / <code>stash</code> / <code>restore</code></td></tr>
+              <tr><td><code>pull</code> 被擋</td><td>工作區不乾淨</td><td>先清工作區，再 <code>pull --rebase</code></td></tr>
+              <tr><td><code>push</code> 被拒</td><td>遠端比你新</td><td>先 <code>fetch</code> / <code>pull --rebase</code> 再 push</td></tr>
+              <tr><td>merge / stash pop 衝突</td><td>同段內容被改成不同版本</td><td>手動解 → <code>git add</code> → 完成流程</td></tr>
+              <tr><td>branch 刪不掉</td><td>Git 判定還沒合併</td><td>確認後 <code>-d</code>（已併）或 <code>-D</code>（強刪）</td></tr>
+              <tr><td><code>push</code> 說沒有 upstream</td><td>分支還沒綁定遠端</td><td><code>git push -u origin &lt;branch&gt;</code></td></tr>
+              <tr><td>Detached HEAD</td><td>切到某個 commit，不在正式分支</td><td>切回 branch，或立刻開新 branch 保留工作</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout info"><span class="ic">🧘</span><div>Git 卡住時，先看 <code>git status</code>，不要先慌。很多問題不是 Git 壞掉，而是它在<strong>保護你</strong>不要覆蓋本機或遠端內容。</div></div>
+        </div>
+      </section>
+
+      <!-- ===== 8. 每日工作流 ===== -->
+      <section class="block" id="workflow">
+        <div class="section-head">
+          <div class="badge-num">9</div>
+          <h2>每日 Git 工作流總複習</h2>
+        </div>
+        <p class="section-sub">把學過的高頻指令串成一套流程，這就是大多數人每天在做的事。</p>
+
+        <div class="card">
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>階段</th><th>核心指令</th></tr></thead>
+            <tbody>
+              <tr><td>同步主線</td><td><code>git switch main</code>、<code>git pull --rebase origin main</code></td></tr>
+              <tr><td>開新工作</td><td><code>git switch -c feature/...</code></td></tr>
+              <tr><td>檢查與提交</td><td><code>git status</code>、<code>git diff</code>、<code>git add</code>、<code>git commit -m</code></td></tr>
+              <tr><td>推上遠端</td><td><code>git push -u origin &lt;branch&gt;</code> 或 <code>git push</code></td></tr>
+              <tr><td>合併收尾</td><td><code>git switch main</code>、<code>git merge &lt;branch&gt;</code>、<code>git branch -d</code></td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout tip"><span class="ic">🏁</span><div><b>五條實戰心法：</b>① 卡住先 <code>status</code>　② 提交前先 <code>diff</code>　③ 每個功能開新分支，別硬在 <code>main</code> 改　④ 已推送的歷史優先 <code>revert</code>，別衝動危險重寫　⑤ 不知道剛剛發生什麼，就看 <code>log</code> 或 <code>reflog</code>。</div></div>
+        </div>
+      </section>
+
+      <!-- ===== 9. 速查表 ===== -->
+      <section class="block" id="cheat">
+        <div class="section-head">
+          <div class="badge-num">10</div>
+          <h2>指令速查表</h2>
+          <span class="tag">急救卡</span>
+        </div>
+        <p class="section-sub">先分清楚你現在卡在「檔案、暫存區、commit、還是遠端」，就比較不容易下錯指令。</p>
+
+        <div class="card">
+          <h3>⚡ 十秒版懶人包</h3>
+          <div class="code" data-copy>
+            <div class="code-head"><div class="dots"><i></i><i></i><i></i></div><span class="label">最常用救援</span><button class="copy-btn">📋 複製</button></div>
+<pre class="code-body"><code><span class="tok-cmt"># 檔案救回</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">restore</span> .
+<span class="tok-cmt"># 取消 add</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">restore</span> <span class="tok-flag">--staged</span> .
+<span class="tok-cmt"># 撤銷最後一次 commit，但保留修改</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">reset</span> HEAD~1
+<span class="tok-cmt"># 撤銷最後一次 commit，連修改也丟掉</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">reset</span> <span class="tok-flag">--hard</span> HEAD~1
+<span class="tok-cmt"># 已 push，安全撤銷</span>
+<span class="tok-cmd">git</span> <span class="tok-sub">revert</span> HEAD</code></pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🔍 我現在遇到這情況 → 先想這招</h3>
+          <div class="cheat-grid">
+            <div class="cheat"><div class="q">本地檔案改壞 / 刪掉，想恢復</div><div class="a"><code>git restore 檔名</code></div></div>
+            <div class="cheat"><div class="q">全部檔案恢復</div><div class="a"><code>git restore .</code></div></div>
+            <div class="cheat"><div class="q"><code>add</code> 加錯，取消 staged</div><div class="a"><code>git restore --staged 檔名</code></div></div>
+            <div class="cheat"><div class="q">撤銷最後 commit，保留修改</div><div class="a"><code>git reset HEAD~1</code></div></div>
+            <div class="cheat"><div class="q">撤銷最後 commit，保留 staged</div><div class="a"><code>git reset --soft HEAD~1</code></div></div>
+            <div class="cheat"><div class="q">撤銷最後 commit，連修改都不要</div><div class="a"><code>git reset --hard HEAD~1</code></div></div>
+            <div class="cheat"><div class="q">已 push，安全撤銷</div><div class="a"><code>git revert HEAD</code></div></div>
+            <div class="cheat"><div class="q">只是想抓遠端最新</div><div class="a"><code>git pull</code></div></div>
+            <div class="cheat"><div class="q">退過頭想找回位置</div><div class="a"><code>git reflog</code></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🧠 三組最容易搞混的差別</h3>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>對照</th><th>關鍵差別</th></tr></thead>
+            <tbody>
+              <tr><td><code>restore</code> vs <code>reset</code></td><td><code>restore</code> 還原<strong>檔案內容</strong>／取消 staged；<code>reset</code> 把<strong>Git 狀態</strong>（commit）往回拉</td></tr>
+              <tr><td><code>reset</code> vs <code>revert</code></td><td><code>reset</code> <strong>會</strong>改歷史（未 push）；<code>revert</code> <strong>不</strong>改歷史（已 push）</td></tr>
+              <tr><td><code>pull</code> vs <code>restore</code></td><td><code>pull</code> 抓<strong>遠端</strong>最新；<code>restore</code> 從<strong>本地 commit</strong> 還原檔案（不是抓遠端）</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="card">
+          <h3>📊 風險分級（越往下越危險）</h3>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>指令</th><th>風險</th><th>為什麼</th></tr></thead>
+            <tbody>
+              <tr><td><code>git status</code> / <code>log</code> / <code>diff</code></td><td><span class="risk safe">很安全</span></td><td>只看，不改任何內容</td></tr>
+              <tr><td><code>git stash</code> / <code>git revert</code></td><td><span class="risk safe">相對安全</span></td><td>先收起來 / 新增反向提交，可回復性高</td></tr>
+              <tr><td><code>git reset --soft</code> / <code>git reset</code></td><td><span class="risk mid">中風險</span></td><td>退掉 commit，但修改還在</td></tr>
+              <tr><td><code>git reset --hard</code> / <code>git clean -fd</code></td><td><span class="risk high">高風險</span></td><td>直接刪掉本機內容</td></tr>
+              <tr><td><code>git push --force</code></td><td><span class="risk high">很高風險</span></td><td>可能改亂遠端共享歷史</td></tr>
+            </tbody>
+          </table></div>
+          <div class="callout danger"><span class="ic">🧭</span><div><b>方向感原則：</b>越會「改寫歷史」、越會「直接刪本機」、越會「影響遠端與隊友」的指令 —— 通常越危險。動手前先看 <code>status</code>、<code>log</code>、<code>diff</code>。</div></div>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <p>🌿 <strong>Git 40% 高頻指令互動教學</strong> · 由原 24 份教材整理而成</p>
+        <p style="margin-top:8px">你不需要一次把 Git 全部學完，把這些高頻流程練熟，就足以應付大多數開發場景。</p>
+      </footer>
+
+      <div class="search-empty" id="searchEmpty">🔍 找不到符合「<span id="searchTerm"></span>」的內容，換個關鍵字試試。</div>
+
+    </div>
+  </main>
+</div>
+
+<button class="totop" id="toTop" aria-label="回到頂部">↑</button>
+
+<script>
+/* ============================================================
+   主題切換
+============================================================ */
+const root=document.documentElement;
+const themeBtn=document.getElementById('themeBtn');
+const saved=localStorage.getItem('git-guide-theme');
+if(saved){root.setAttribute('data-theme',saved);themeBtn.textContent=saved==='dark'?'☀️':'🌙';}
+themeBtn.addEventListener('click',()=>{
+  const next=root.getAttribute('data-theme')==='dark'?'light':'dark';
+  root.setAttribute('data-theme',next);
+  themeBtn.textContent=next==='dark'?'☀️':'🌙';
+  localStorage.setItem('git-guide-theme',next);
+});
+
+/* ============================================================
+   複製：程式碼區塊 + 單行指令
+============================================================ */
+function flash(btn,okText){
+  const old=btn.textContent;const cls=btn.classList.contains('mini-copy');
+  btn.classList.add('done');btn.textContent=cls?'✓':'✓ 已複製';
+  setTimeout(()=>{btn.classList.remove('done');btn.textContent=old;},1400);
+}
+// 同時相容 https/localhost（clipboard API）與 file://（execCommand 後援）
+function copyText(text,btn){
+  const done=()=>flash(btn);
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done).catch(()=>legacyCopy(text,done));
+  }else{legacyCopy(text,done);}
+}
+function legacyCopy(text,done){
+  const ta=document.createElement('textarea');
+  ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');done();}catch(e){}
+  document.body.removeChild(ta);
+}
+// 多行程式碼
+document.querySelectorAll('.code[data-copy]').forEach(block=>{
+  const btn=block.querySelector('.copy-btn');
+  if(!btn)return;
+  btn.addEventListener('click',()=>copyText(block.querySelector('code').innerText,btn));
+});
+// 單行指令（複製時去掉註解）
+document.querySelectorAll('.cmd-line .mini-copy').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    let text=btn.parentElement.querySelector('code').innerText;
+    text=text.replace(/\s+#.*$/,'').trim();
+    copyText(text,btn);
+  });
+});
+
+/* ============================================================
+   四區域互動流程圖
+============================================================ */
+const flowData={
+  wt:{t:'📝 Working Tree（工作區）',d:'你目前正在編輯的檔案，就像桌面上的草稿。常見動作：直接修改檔案。下一步用 <b>git add</b> 把要提交的內容放進暫存區。'},
+  stage:{t:'📦 Staging Area（暫存區）',d:'你「準備要提交」的內容打包區。<b>git add</b> 把變更放進來，<b>git commit</b> 才會把這裡的內容變成正式版本。'},
+  local:{t:'🗄️ Local Repository（本機倉庫）',d:'Git 真正記錄版本歷史的地方，存在隱藏的 <b>.git</b> 資料夾裡。<b>git commit</b> 在這裡建立版本點；<b>git log</b> 看歷史。'},
+  remote:{t:'☁️ Remote Repository（遠端倉庫）',d:'團隊共用的遠端倉庫（如 GitHub）。<b>git push</b> 把本機提交送上去，<b>git pull</b> / <b>git fetch</b> 把別人的更新拉回來。'}
+};
+const flowDetail=document.getElementById('flowDetail');
+function showFlow(k){
+  const d=flowData[k];
+  flowDetail.innerHTML='<b>'+d.t+'</b><br>'+d.d;
+  document.querySelectorAll('.flow-node').forEach(n=>n.classList.toggle('on',n.dataset.k===k));
+}
+document.querySelectorAll('.flow-node').forEach(n=>{
+  n.addEventListener('click',()=>showFlow(n.dataset.k));
+});
+showFlow('wt');
+
+/* ============================================================
+   起手式：互動指令步驟
+============================================================ */
+const kickData={
+  init:{t:'① git init — 把資料夾變成 Git 倉庫',d:'在目前資料夾產生一個隱藏的 <code>.git</code> 子資料夾；從這一刻起，Git 才開始「看得見」你的檔案。<br><b>注意：</b>它只建立空骨架，<u>還沒有任何版本</u>，也還沒連上 GitHub。'},
+  ignore:{t:'② 建立 .gitignore — 先把垃圾擋在門外',d:'新建一個名為 <code>.gitignore</code> 的純文字檔，把不該上傳的東西列進去，例如 <code>node_modules/</code>、<code>.env</code>、<code>dist/</code>。<br><b>為什麼要先做：</b>等垃圾或密碼被提交進去才想清掉，會麻煩很多倍；第一步就擋掉最省事。'},
+  add:{t:'③ git add . — 把變更放進暫存區',d:'把目前資料夾裡<u>所有</u>變更挑進「暫存區」，準備打包成第一個版本。<br><code>add</code> 不是上傳，只是先把要提交的內容圈起來；被 .gitignore 擋掉的不會進來。'},
+  commit:{t:'④ git commit -m "first commit" — 建立第一個版本',d:'把暫存區的內容做成一張<b>版本快照</b>，<code>-m</code> 後面是這次的說明訊息。<br>到這一步，專案才真正有了「第一個版本」—— 但目前都還只在你自己的電腦裡。'},
+  branch:{t:'⑤ git branch -M main — 把主分支命名為 main',d:'把目前所在的分支<b>改名為 <code>main</code></b>，和 GitHub 的預設主分支一致。<br><code>-M</code> = 強制改名（即使名稱已存在也覆蓋），可避免「master / main」名稱對不上而推不上去。'},
+  remote:{t:'⑥ git remote add origin … — 接上 GitHub 倉庫',d:'把本機倉庫和你在 GitHub 上開好的<b>空倉庫</b>連起來，並把這個遠端取名為 <code>origin</code>（慣例名稱，不是魔法）。<br><b>前提：</b>要先在 GitHub 按 <i>New repository</i> 開一個空倉庫，把網址換進指令。'},
+  push:{t:'⑦ git push -u origin main — 第一次推上雲端',d:'把本機的 <code>main</code> 推上 <code>origin</code>；到這裡，GitHub 上才看得到你的程式碼。<br><code>-u</code> 會記住「main 對應 origin/main」，<u>之後只要打 <code>git push</code></u> 就好。'}
+};
+const kickDetail=document.getElementById('kickDetail');
+if(kickDetail){
+  const kickSteps=document.querySelectorAll('.kick-step');
+  const showKick=k=>{
+    const d=kickData[k];if(!d)return;
+    kickDetail.innerHTML='<div class="dt">'+d.t+'</div>'+d.d;
+    kickSteps.forEach(n=>n.classList.toggle('on',n.dataset.k===k));
+  };
+  kickSteps.forEach(n=>n.addEventListener('click',()=>showKick(n.dataset.k)));
+  showKick('init');
+}
+
+/* ============================================================
+   分頁 tabs
+============================================================ */
+document.querySelectorAll('[data-tabs]').forEach(wrap=>{
+  const btns=wrap.querySelectorAll('.tab-btn');
+  const panels=wrap.querySelectorAll('.tab-panel');
+  btns.forEach((b,i)=>b.addEventListener('click',()=>{
+    btns.forEach(x=>x.classList.remove('active'));
+    panels.forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');panels[i].classList.add('active');
+  }));
+});
+
+/* ============================================================
+   手風琴 accordion
+============================================================ */
+document.querySelectorAll('.acc-head').forEach(head=>{
+  head.addEventListener('click',()=>{
+    const body=head.nextElementSibling;
+    const open=head.classList.toggle('open');
+    body.style.maxHeight=open?body.scrollHeight+'px':'0';
+  });
+});
+
+/* ============================================================
+   側欄導覽：scroll-spy + 行動裝置開合
+============================================================ */
+const navLinks=[...document.querySelectorAll('.nav a')];
+const sections=navLinks.map(a=>document.querySelector(a.getAttribute('href')));
+const crumb=document.getElementById('crumb');
+function onScroll(){
+  const y=window.scrollY+120;let idx=0;
+  sections.forEach((s,i)=>{if(s&&s.offsetTop<=y)idx=i;});
+  navLinks.forEach(a=>a.classList.remove('active'));
+  if(navLinks[idx]){navLinks[idx].classList.add('active');
+    crumb.textContent=navLinks[idx].textContent.trim();}
+  document.getElementById('toTop').classList.toggle('show',window.scrollY>500);
+}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+const sidebar=document.getElementById('sidebar');
+const overlay=document.getElementById('overlay');
+document.getElementById('menuBtn').addEventListener('click',()=>{
+  sidebar.classList.add('open');overlay.classList.add('show');
+});
+overlay.addEventListener('click',closeNav);
+function closeNav(){sidebar.classList.remove('open');overlay.classList.remove('show');}
+navLinks.forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<=980)closeNav();}));
+
+document.getElementById('toTop').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+/* ============================================================
+   搜尋 / 過濾（依卡片標題與內文）
+============================================================ */
+const search=document.getElementById('search');
+const cards=[...document.querySelectorAll('.card')];
+const blocks=[...document.querySelectorAll('section.block')];
+const empty=document.getElementById('searchEmpty');
+search.addEventListener('input',()=>{
+  const q=search.value.trim().toLowerCase();
+  if(!q){
+    cards.forEach(c=>c.classList.remove('hide-by-search'));
+    blocks.forEach(b=>b.classList.remove('hide-by-search'));
+    empty.style.display='none';return;
+  }
+  let any=false;
+  cards.forEach(c=>{
+    const hit=c.innerText.toLowerCase().includes(q);
+    c.classList.toggle('hide-by-search',!hit);
+    if(hit)any=true;
+  });
+  blocks.forEach(b=>{
+    const visible=[...b.querySelectorAll('.card')].some(c=>!c.classList.contains('hide-by-search'));
+    // 區段內沒有卡片（如純標題）時，用整段文字判斷
+    const own=b.querySelectorAll('.card').length===0 && b.innerText.toLowerCase().includes(q);
+    b.classList.toggle('hide-by-search',!visible&&!own);
+  });
+  empty.style.display=any?'none':'block';
+  document.getElementById('searchTerm').textContent=search.value;
+});
+// 鍵盤快捷：/ 聚焦搜尋
+document.addEventListener('keydown',e=>{
+  if(e.key==='/'&&document.activeElement!==search){e.preventDefault();search.focus();}
+  if(e.key==='Escape'&&document.activeElement===search){search.value='';search.dispatchEvent(new Event('input'));search.blur();}
+});
+</script>
+</body>
+</html>
